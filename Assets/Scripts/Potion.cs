@@ -13,7 +13,7 @@ PotionBoard는 게임 오브젝트로서 여러 Node들을 포함하고 있습�
 public class Potion : MonoBehaviour
 {
     public PotionType potionType;
-    
+
     public int xIndex; // 포션의 x 좌표
     public int yIndex; // 포션의 y 좌표
 
@@ -29,8 +29,8 @@ public class Potion : MonoBehaviour
         xIndex = x;
         yIndex = y;
     }
-    
-    public void SetIndicies(int x, int y)
+
+    public void SetIndices(int x, int y)
     {
         xIndex = x;
         yIndex = y;
