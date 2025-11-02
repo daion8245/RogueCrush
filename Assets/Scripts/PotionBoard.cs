@@ -13,6 +13,7 @@ public class PotionBoard : MonoBehaviour
     
     public GameObject[] potionPrefab; //포션 프리팹 배열
     
+    //대충 개쩌는 깃허브 사용 어쩌구 저쩌구
     
     //포션 보드의 2차원 배열 선언
     private Node[,] _potionBoard; // 포션 보드의 2차원 배열
