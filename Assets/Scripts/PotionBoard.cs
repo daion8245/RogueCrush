@@ -13,6 +13,7 @@ public class PotionBoard : MonoBehaviour
     
     public GameObject[] potionPrefab; //포션 프리팹 배열
     
+    
     //포션 보드의 2차원 배열 선언
     private Node[,] _potionBoard; // 포션 보드의 2차원 배열
     //2차원 배열이란? 2개의 인덱스를 사용하여 데이터를 저장하는 배열입니다. 예를 들어 아파트 생각하면 편합니다.
