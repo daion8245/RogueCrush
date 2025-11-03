@@ -79,12 +79,12 @@ public class PotionBoard : MonoBehaviour
                 // 노드 생성 및 포션 보드에 할당
                 // (기존) _potionBoard[x, y] = potion.AddComponent<Node>(); //노드 생성 및 포션 보드에 할당
                 // → 노드는 '칸' GameObject로 분리해 영속 유지
-                GameObject nodeGO = new GameObject($"Node_{x}_{y}");
-                nodeGO.transform.SetParent(potionBoardGo != null ? potionBoardGo.transform : transform, false);
-                nodeGO.transform.localPosition = position;
+                GameObject nodeGo = new GameObject($"Node_{x}_{y}");
+                nodeGo.transform.SetParent(potionBoardGo != null ? potionBoardGo.transform : transform, false);
+                nodeGo.transform.localPosition = position;
 
-                Node node = nodeGO.AddComponent<Node>();
-                node.Initialize(x, y, true);
+                Node node = nodeGo.AddComponent<Node>();
+                node.Initialize(x, y);
                 node.SetPotion(potion);
 
                 _potionBoard[x, y] = node; //포션 보드에 노드 할당
