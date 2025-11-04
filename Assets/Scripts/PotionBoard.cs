@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -20,7 +21,7 @@ public class PotionBoard : MonoBehaviour
 
     public GameObject potionBoardGo; // 포션 보드 게임 오브젝트
 
-    // "일단 강의에서 이렇게 만들라 해서 만들긴 하는데 이거 싱글톤 나중에 안쓸거같음
+    // "일단 강의에서 이렇게 만들라 해서 만들긴 하는데 이거 싱글톤 나중에 안쓸거같음"
     public static PotionBoard Instance; // 싱글톤 인스턴스 
     // 싱글톤이란? 싱글톤 패턴은 클래스의 인스턴스가 오직 하나만 존재하도록 보장하는 디자인 패턴입니다.
     // 이를 통해 전역적으로 접근 가능한 단일 인스턴스를 제공할 수 있습니다. 보통 Instance라는 정적 변수를 사용하여 구현합니다. "우리 텍스트 RPG만들때 게임메니져 이걸로 만듬"
@@ -90,5 +91,156 @@ public class PotionBoard : MonoBehaviour
                 _potionBoard[x, y] = node; //포션 보드에 노드 할당
             }
         }
+
+        CheckBoardToMatches();
+    }
+    
+    /// <summary>
+    /// 전반적으로 일치하는 포션이 있는지 확인하는 함수
+    /// 일치하는 포션이 있으면 true 반환
+    /// 그리고 일치하는 포션들은 isMatched 플래그를 true로 설정
+    /// Debug.Log로 매치 발생 상황 출력
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <returns></returns>
+    public bool CheckBoardToMatches()
+    {
+        Debug.Log($"Checking board to match pos");
+        bool hasMatches = false;
+        
+        List<Potion> potionsToRemove = new();
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (_potionBoard[x, y].isUsable)
+                {
+                    Potion potion = _potionBoard[x,y].potion.GetComponent<Potion>();
+
+                    if (!potion.isMatched)
+                    {
+                        MatchResult matchdPorions = IsConnected(potion);
+
+                        if (matchdPorions.connectedPotions.Count >= 3)
+                        {
+                            potionsToRemove.AddRange(matchdPorions.connectedPotions);
+
+                            foreach (Potion potionToRemove in matchdPorions.connectedPotions)
+                            {
+                                potionToRemove.isMatched = true;
+                            }
+                            
+                            hasMatches = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return hasMatches;
+    }
+
+    private MatchResult IsConnected(Potion potion)
+    {
+        List<Potion> connectedPotions = new();
+        PotionType potionType = potion.potionType;
+        
+        connectedPotions.Add(potion);
+        
+        //오른쪽 방향 확인
+        CheckDirection(potion, new Vector2Int(1,0), connectedPotions);
+        //왼쪽 방향 확인
+        CheckDirection(potion, new Vector2Int(-1,0), connectedPotions);
+        // 3매치가 되었는지 확인
+        if (connectedPotions.Count == 3)
+        {
+            Debug.Log($"가로 3매치 발생, 색깔 : {connectedPotions[0].potionType}");
+
+            return new MatchResult()
+            {
+                connectedPotions = connectedPotions,
+                direction = MatchDirection.Horizontal
+            };
+        }
+        //3매치 이상인지 확인
+        else if (connectedPotions.Count > 3)
+        {
+            Debug.Log($"가로 3매치 이상 매치 발생, 색깔 : {connectedPotions[0].potionType}");
+
+            return new MatchResult()
+            {
+                connectedPotions = connectedPotions,
+                direction = MatchDirection.LongHorizontal
+            };
+        }
+        //세로 매치 확인을 위해 리스트 초기화
+        connectedPotions.Clear();
+        //현재 포션 추가
+        connectedPotions.Add(potion);
+        
+        //위 방향 확인
+        CheckDirection(potion, new Vector2Int(0,1), connectedPotions);
+        //아래 방향 확인
+        CheckDirection(potion, new Vector2Int(0,-1), connectedPotions);
+        // 3매치가 되었는지 확인
+        if (connectedPotions.Count == 3)
+        {
+            Debug.Log($"세로 3매치 발생, 색깔 : {connectedPotions[0].potionType}");
+
+            return new MatchResult()
+            {
+                connectedPotions = connectedPotions,
+                direction = MatchDirection.Vertical
+            };
+        }
+        //3매치 이상인지 확인
+        else if (connectedPotions.Count > 3)
+        {
+            Debug.Log($"세로 3매치 이상 매치 발생, 색깔 : {connectedPotions[0].potionType}");
+
+            return new MatchResult()
+            {
+                connectedPotions = connectedPotions,
+                direction = MatchDirection.LongVertical
+            };
+        }
+        else
+        {
+            return new MatchResult()
+            {
+                connectedPotions = connectedPotions,
+                direction = MatchDirection.None
+            };
+        }
+    }
+
+    /// <summary>
+    /// 현제 보드에 일정 갯수 이상 겹치는 포션이 있는지 확인하는 함수
+    /// </summary>
+    private void CheckDirection(Potion pot, Vector2Int direction, List<Potion> connectedPotions)
+    {
+        PotionType potionType = pot.potionType;
+        int x = pot.xIndex + direction.x;
+        int y = pot.yIndex + direction.y;
+        
+        while (x >= 0 && x < width && y >= 0 && y < height)
+        {
+            if(!_potionBoard[x, y].isUsable) break;
+            
+            Potion neighborPotion = _potionBoard[x, y].potion.GetComponent<Potion>();
+
+            if (!neighborPotion.isMatched && neighborPotion.potionType == potionType)
+            {
+                connectedPotions.Add(neighborPotion);
+                
+                x += direction.x;
+                y += direction.y;
+            }
+            else break;
+        }
+        
+        
     }
 }
