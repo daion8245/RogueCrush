@@ -20,7 +20,6 @@ public class BoardSystem : MonoBehaviour
     
     #endregion
     
-    
     private Node[,] _boardPieces; // 보드의 2차원 배열 이곳에 노드들이 들어간다.
     
     public static BoardSystem Instance; // 싱글톤 인스턴스 
@@ -45,6 +44,9 @@ public class BoardSystem : MonoBehaviour
         InitializeBoard();
     }
 
+    /// <summary>
+    /// 보드를 초기 생성하는 함수
+    /// </summary>
     void InitializeBoard()
     {
         _boardPieces = new Node[width, height]; // 보드 노드 배열 초기화
@@ -103,28 +105,42 @@ public class BoardSystem : MonoBehaviour
         Debug.Log($"Checking board to match pos");
         bool hasMatches = false;
         
+        //제거할 피스들(매치된 피스들)을 저장할 리스트
         List<Piece> piecesToRemove = new List<Piece>();
         
+        //보드의 모든 피스를 순회하며 매치 확인
+        //중복 제거를 피하기 위해 isMatched가 false인 피스만 검사
+        //매치된 피스들은 piecesToRemove 리스트에 추가하고 isMatched 플래그를 true로 설정
+        //매치가 발견되면 hasMatches를 true로 설정
+        //모든 보드를 돌기떄문에 최적화가 필요해보임
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
+                //사용 가능한 노드인지 확인
                 if (_boardPieces[x, y].isUsable)
                 {
+                    //노드의 피스 가져오기
                     Piece piece = _boardPieces[x,y].piece.GetComponent<Piece>();
 
+                    //피스가 아직 매치되지 않았는지 확인
                     if (!piece.isMatched)
                     {
+                        //피스가 다른 동일한 색상의 피스들과 연결되어 있는지 확인
                         MatchResult matchPiece = IsConnected(piece);
 
+                        //3개 이상 매치되었는지 확인
                         if (matchPiece.connectedPieces.Count >= 3)
                         {
+                            //매치된 피스들을 제거할 리스트에 추가하고 isMatched 플래그 설정
                             piecesToRemove.AddRange(matchPiece.connectedPieces);
+                            //매치된 피스들을 전부 isMatched로 플래그 설정
                             foreach (Piece pieceToRemove in matchPiece.connectedPieces)
                             {
                                 pieceToRemove.isMatched = true;
                             }
                             
+                            //매치가 발견되었음을 표시
                             hasMatches = true;
                         }
                     }
@@ -132,15 +148,22 @@ public class BoardSystem : MonoBehaviour
             }
         }
 
+        //매치된 피스들 출력
         return hasMatches;
     }
 
+    /// <summary>
+    /// 특정 피스가 다른 동일한 생삭의 피스들과 연결되있는지 확인하고
+    /// 연결된 피스들의 리스트와 매치 방향 정보를 반환하는 매서드
+    /// </summary>
+    /// <param name="piece"></param>
+    /// <returns></returns>
     private MatchResult IsConnected(Piece piece)
     {
-        List<Piece> connectedPieces = new();
-        
-        connectedPieces.Add(piece);
-        
+        //연결된 피스들을 저장할 리스트
+        //생성과 동시에 현제 피스 추가
+        List<Piece> connectedPieces = new() { piece };
+
         //오른쪽 방향 확인
         CheckDirection(piece, new Vector2Int(1,0), connectedPieces);
         //왼쪽 방향 확인
@@ -150,6 +173,7 @@ public class BoardSystem : MonoBehaviour
         {
             Debug.Log($"가로 3매치 발생, 색깔 : {connectedPieces[0].pieceType}");
 
+            //연결된 피스들과 매치 방향 정보를 반환
             return new MatchResult()
             {
                 connectedPieces = connectedPieces,
@@ -161,6 +185,7 @@ public class BoardSystem : MonoBehaviour
         {
             Debug.Log($"가로 3매치 이상 매치 발생, 색깔 : {connectedPieces[0].pieceType}");
 
+            //연결된 피스들과 매치 방향 정보를 반환
             return new MatchResult()
             {
                 connectedPieces = connectedPieces,
@@ -181,6 +206,7 @@ public class BoardSystem : MonoBehaviour
         {
             Debug.Log($"세로 3매치 발생, 색깔 : {connectedPieces[0].pieceType}");
 
+            //연결된 피스들과 매치 방향 정보를 반환
             return new MatchResult()
             {
                 connectedPieces = connectedPieces,
@@ -192,6 +218,7 @@ public class BoardSystem : MonoBehaviour
         {
             Debug.Log($"세로 3매치 이상 매치 발생, 색깔 : {connectedPieces[0].pieceType}");
 
+            //연결된 피스들과 매치 방향 정보를 반환
             return new MatchResult()
             {
                 connectedPieces = connectedPieces,
@@ -200,6 +227,7 @@ public class BoardSystem : MonoBehaviour
         }
         else
         {
+            //만약 매치된 피스가 없다면 빈 리스트와 None 반환
             return new MatchResult()
             {
                 connectedPieces = connectedPieces,
@@ -213,20 +241,27 @@ public class BoardSystem : MonoBehaviour
     /// </summary>
     private void CheckDirection(Piece originPiece, Vector2Int direction, List<Piece> connectedPieces)
     {
+        //피스 타입과 시작 좌표 설정
         PieceType pieceType = originPiece.pieceType;
         int x = originPiece.xIndex + direction.x;
         int y = originPiece.yIndex + direction.y;
         
+        //해당 방향으로 연결된 피스들을 확인
         while (x >= 0 && x < width && y >= 0 && y < height)
         {
+            //보드의 범위를 벗어나지 않는지 확인
             if(!_boardPieces[x, y].isUsable) break;
             
+            //이웃한 피스 가져오기
             Piece neighborPiece = _boardPieces[x, y].piece.GetComponent<Piece>();
 
+            //이웃한 피스가 매치되지 않았고 동일한 타입인지 확인
             if (!neighborPiece.isMatched && neighborPiece.pieceType == pieceType)
             {
+                //연결된 피스 리스트에 추가
                 connectedPieces.Add(neighborPiece);
                 
+                //다음 위치로 이동
                 x += direction.x;
                 y += direction.y;
             }
