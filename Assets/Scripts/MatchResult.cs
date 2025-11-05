@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
 
 /// <summary>
-/// 포션들의 매치 상태를 나타내는 열거형
+/// 피스들의 매치 상태를 나타내는 열거형
 /// </summary>
 public enum MatchDirection
 {
@@ -15,10 +14,10 @@ public enum MatchDirection
 }
 
 /// <summary>
-/// 포션 매치 결과를 나타내는 클래스
+/// 피스 매치 결과를 나타내는 클래스
 /// </summary>
 public class MatchResult
 {
-    public List<Potion> connectedPotions;
+    public List<Piece> connectedPieces;
     public MatchDirection direction;
 }

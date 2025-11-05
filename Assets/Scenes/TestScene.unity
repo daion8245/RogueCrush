@@ -152,14 +152,8 @@ MonoBehaviour:
   height: 8
   spacingX: 0
   spacingY: 0
-  potionPrefab:
-  - {fileID: 3162302784734765058, guid: 46597404f33bda44b898a2700eac3855, type: 3}
-  - {fileID: 4372423454657264744, guid: 8d433b03c019b2d4089f030e0651873b, type: 3}
-  - {fileID: 7235817297889252893, guid: 65c2922d62b3ec04bbc57419813244bf, type: 3}
-  - {fileID: 6596342118991952337, guid: 549bf5bd7f29c644283d76e5a7c20808, type: 3}
-  - {fileID: 8636077495160129218, guid: 48825e3bf623b4f4a941201fdca6afdc, type: 3}
-  potionBoardGo: {fileID: 1287587262}
-  potionsRoot: {fileID: 0}
+  piecePrefabs: []
+  potionsRoot: {fileID: 1287587264}
 --- !u!4 &1287587264
 Transform:
   m_ObjectHideFlags: 0
