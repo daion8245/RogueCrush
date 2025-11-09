@@ -31,6 +31,11 @@ public class Piece : MonoBehaviour
         xIndex = x;
         yIndex = y;
     }
+
+    public void MovePiece()
+    {
+        
+    }
 }
 
 /// <summary>

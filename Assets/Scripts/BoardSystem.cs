@@ -13,6 +13,12 @@ public class BoardSystem : MonoBehaviour
     //노드간의 간격 설정
     [SerializeField]private float spacingX; //노드간의 가로 간격
     [SerializeField]private float spacingY; //노드간의 세로 간격
+    
+    //선택된 피스
+    [SerializeField] private Piece selectedPiece; //선택된 피스
+    
+    //시스템에서 피스를 움직이는 중인가?
+    [SerializeField] private bool isProcessingMoving; //피스가 움직이는 중인지 여부
 
     [SerializeField] private GameObject[] piecePrefabs; //피스 프리팹 배열
 
@@ -22,7 +28,9 @@ public class BoardSystem : MonoBehaviour
     
     private Node[,] _boardPieces; // 보드의 2차원 배열 이곳에 노드들이 들어간다.
     
-    public static BoardSystem Instance; // 싱글톤 인스턴스 
+    public List<GameObject> piecesToDestroy = new(); // 제거할 피스들 리스트
+    
+    public static BoardSystem Instance; // 싱글톤 인스턴스
 
     [Header("Optional Parents")] public Transform piecesRoot; // 피스 부모 오브젝트
    
@@ -49,6 +57,7 @@ public class BoardSystem : MonoBehaviour
     /// </summary>
     void InitializeBoard()
     {
+        DestroyPieces();
         _boardPieces = new Node[width, height]; // 보드 노드 배열 초기화
 
         spacingX = (float)(width - 1) / 2; // 가로 간격 설정
@@ -87,12 +96,26 @@ public class BoardSystem : MonoBehaviour
                 node.SetPiece(pieceGo);
 
                 _boardPieces[x, y] = node; //보드에 노드 할당
+                
+                piecesToDestroy.Add(nodeGo); //제거할 피스 리스트에 추가
             }
         }
 
         CheckBoardToMatches();
     }
-    
+
+    private void DestroyPieces()
+    {
+        if (piecesToDestroy != null)
+        {
+            foreach (GameObject piece in piecesToDestroy)
+            {
+                Destroy(piece);
+            }
+            piecesToDestroy.Clear();
+        }
+    }
+
     /// <summary>
     /// 전반적으로 일치하는 피스가 있는지 확인하는 함수
     /// 일치하는 피스가 있으면 true 반환
@@ -268,4 +291,43 @@ public class BoardSystem : MonoBehaviour
             else break;
         }
     }
+
+    #region pieceSwaping
+
+    public void SelectPiece(Piece piece)
+    {
+        if (selectedPiece == null)
+        {
+            Debug.Log($"{piece} 선택됨");
+            selectedPiece = piece;
+        }
+        else if (selectedPiece == piece)
+        {
+            Debug.Log($"{piece} 선택 해제됨");
+            selectedPiece = null;
+        }
+        else if (selectedPiece != piece)
+        {
+            SwapPieces(selectedPiece, piece);
+            selectedPiece = null;
+        }
+    }
+
+    /// <summary>
+    /// 피스를 스왑하는 메서드
+    /// </summary>
+    /// <param name="currentPiece">이동시킬 대상</param>
+    /// <param name="targetPiece">이동될 위치의 대상</param>
+    private void SwapPieces(Piece currentPiece, Piece targetPiece)
+    {
+        isProcessingMoving = true;
+    }
+    
+    private bool IsAdjacent(Piece currentPiece, Piece targetPiece)
+    => Mathf.Abs(currentPiece.xIndex - targetPiece.xIndex)
+        + Mathf.Abs(currentPiece.yIndex - targetPiece.yIndex) == 1;
+
+    #endregion
+    
+    
 }
