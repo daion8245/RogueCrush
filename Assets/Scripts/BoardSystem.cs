@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
+using UnityEngine.InputSystem;
 
 public class BoardSystem : MonoBehaviour
 {
@@ -34,6 +35,8 @@ public class BoardSystem : MonoBehaviour
     public static BoardSystem Instance; // 싱글톤 인스턴스
 
     [Header("Optional Parents")] public Transform piecesRoot; // 피스 부모 오브젝트
+    
+    private Camera mainCam;
    
     private void Awake()
     {
@@ -50,13 +53,17 @@ public class BoardSystem : MonoBehaviour
 
     private void Start()
     {
+        mainCam = Camera.main;
         InitializeBoard();
     }
 
     private void Update()
     {
+        #region oldInput
+        /*
         if (Input.GetMouseButtonDown(0))
         {
+            
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
             
@@ -69,6 +76,38 @@ public class BoardSystem : MonoBehaviour
                 Debug.Log($"{piece.gameObject} <= 해당 피스를 클릭했습니다.");
             }
             
+        }
+        */
+        
+        #endregion
+        // 마우스가 없는 환경일 수도 있으니 한 번 체크
+        if (Mouse.current == null)
+            return;
+
+        // 왼쪽 마우스 버튼이 "이번 프레임에 눌렸을 때"만 처리
+        if (Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            // 1. 마우스 스크린 좌표 읽기
+            Vector2 mousePos = Mouse.current.position.ReadValue();
+
+            // 2. 스크린 좌표 → Ray
+            Ray ray = mainCam.ScreenPointToRay(mousePos);
+
+            // 3. 2D Raycast
+            RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+
+            // 4. 맞은 콜라이더가 있고, 거기에 Piece가 붙어 있는지 확인
+            if (hit.collider != null)
+            {
+                Piece piece = hit.collider.gameObject.GetComponent<Piece>();
+                if (piece != null)
+                {
+                    if (isProcessingMoving)
+                        return;
+
+                    Debug.Log($"{piece.gameObject} <= 해당 피스를 클릭했습니다.");
+                }
+            }
         }
     }
 
