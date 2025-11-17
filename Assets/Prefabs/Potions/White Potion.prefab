@@ -127,7 +127,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 550f6fdef5b1c764596840fc1e575a1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Potion
-  pieceType: 0
+  pieceType: 4
   xIndex: 0
   yIndex: 0
   isMatched: 0
