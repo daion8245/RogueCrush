@@ -388,6 +388,7 @@ public class BoardSystem : MonoBehaviour
             return;
         DoSwap(currentPiece, targetPiece);
         isProcessingMoving = true;
+        StartCoroutine(ProcessMatches(currentPiece, targetPiece));
     }
 
     /// <summary>
