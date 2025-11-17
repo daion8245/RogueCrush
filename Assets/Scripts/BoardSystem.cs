@@ -7,37 +7,37 @@ using UnityEngine.InputSystem;
 public class BoardSystem : MonoBehaviour
 {
     #region Serialized Fields
-    
+
     //보드의 크기 설정
-    [SerializeField]private int width = 6; //보드의 가로 크기
-    [SerializeField]private int height = 8;//보드의 세로 크기
+    [SerializeField] private int width = 6; //보드의 가로 크기
+    [SerializeField] private int height = 8;//보드의 세로 크기
 
     //노드간의 간격 설정
-    [SerializeField]private float spacingX; //노드간의 가로 간격
-    [SerializeField]private float spacingY; //노드간의 세로 간격
-    
+    [SerializeField] private float spacingX; //노드간의 가로 간격
+    [SerializeField] private float spacingY; //노드간의 세로 간격
+
     //선택된 피스
     [SerializeField] private Piece selectedPiece; //선택된 피스
-    
+
     //시스템에서 피스를 움직이는 중인가?
     [SerializeField] private bool isProcessingMoving; //피스가 움직이는 중인지 여부
 
     [SerializeField] private GameObject[] piecePrefabs; //피스 프리팹 배열
 
     private GameObject _boardRoot; // 보드 부모 오브젝트
-    
+
     #endregion
-    
+
     private Node[,] _boardPieces; // 보드의 2차원 배열 이곳에 노드들이 들어간다.
-    
+
     public List<GameObject> piecesToDestroy = new(); // 제거할 피스들 리스트
-    
+
     public static BoardSystem Instance; // 싱글톤 인스턴스
 
     [Header("Optional Parents")] public Transform piecesRoot; // 피스 부모 오브젝트
-    
+
     private Camera mainCam;
-   
+
     private void Awake()
     {
         if (Instance == null)
@@ -78,7 +78,7 @@ public class BoardSystem : MonoBehaviour
             
         }
         */
-        
+
         #endregion
         // 마우스가 없는 환경일 수도 있으니 한 번 체크
         if (Mouse.current == null)
@@ -156,7 +156,7 @@ public class BoardSystem : MonoBehaviour
                 node.SetPiece(pieceGo);
 
                 _boardPieces[x, y] = node; //보드에 노드 할당
-                
+
                 piecesToDestroy.Add(nodeGo); //제거할 피스 리스트에 추가
             }
         }
@@ -192,7 +192,7 @@ public class BoardSystem : MonoBehaviour
 
         //제거할 피스들(매치된 피스들)을 저장할 리스트
         List<Piece> piecesToRemove = new List<Piece>();
-        
+
         //보드의 모든 피스를 순회하며 매치 확인
         //중복 제거를 피하기 위해 isMatched가 false인 피스만 검사
         //매치된 피스들은 piecesToRemove 리스트에 추가하고 isMatched 플래그를 true로 설정
@@ -206,7 +206,7 @@ public class BoardSystem : MonoBehaviour
                 if (_boardPieces[x, y].isUsable)
                 {
                     //노드의 피스 가져오기
-                    Piece piece = _boardPieces[x,y].piece.GetComponent<Piece>();
+                    Piece piece = _boardPieces[x, y].piece.GetComponent<Piece>();
 
                     //피스가 아직 매치되지 않았는지 확인
                     if (!piece.isMatched)
@@ -217,14 +217,16 @@ public class BoardSystem : MonoBehaviour
                         //3개 이상 매치되었는지 확인
                         if (matchPiece.connectedPieces.Count >= 3)
                         {
+                            MatchResult superMatchedPieces = SuperMatch(matchPiece);
+
                             //매치된 피스들을 제거할 리스트에 추가하고 isMatched 플래그 설정
-                            piecesToRemove.AddRange(matchPiece.connectedPieces);
+                            piecesToRemove.AddRange(superMatchedPieces.connectedPieces);
                             //매치된 피스들을 전부 isMatched로 플래그 설정
-                            foreach (Piece pieceToRemove in matchPiece.connectedPieces)
+                            foreach (Piece pieceToRemove in superMatchedPieces.connectedPieces)
                             {
                                 pieceToRemove.isMatched = true;
                             }
-                            
+
                             //매치가 발견되었음을 표시
                             hasMatches = true;
                         }
@@ -235,6 +237,72 @@ public class BoardSystem : MonoBehaviour
 
         //매치된 피스들 출력
         return hasMatches;
+    }
+
+    private MatchResult SuperMatch(MatchResult _matchedResults)
+    {
+        // 가로 매칭 or 긴 가로 매칭이 됐을때
+        if (_matchedResults.direction == MatchDirection.Horizontal || _matchedResults.direction == MatchDirection.LongHorizontal)
+        {
+            foreach(Piece pie in _matchedResults.connectedPieces)
+            {
+                List<Piece> extraConnectedPieces = new();
+
+                CheckDirection(pie, new Vector2Int(0, 1), extraConnectedPieces);
+
+                CheckDirection(pie, new Vector2Int(-0, 1), extraConnectedPieces);
+
+                if (extraConnectedPieces.Count >= 2)
+                {
+                    Debug.Log("긴 가로 매칭 성사");
+                    extraConnectedPieces.AddRange(_matchedResults.connectedPieces);
+
+                    return new MatchResult
+                    {
+                        connectedPieces = extraConnectedPieces,
+                        direction = MatchDirection.Super,
+                    };
+                }
+            }
+            return new MatchResult
+            {
+                connectedPieces = _matchedResults.connectedPieces,
+                direction = _matchedResults.direction
+            };
+        }
+        // 세로 매칭 or 긴 세로 매칭이 됐을때
+        else if (_matchedResults.direction == MatchDirection.Vertical || _matchedResults.direction == MatchDirection.LongVertical)
+        {
+            foreach (Piece pie in _matchedResults.connectedPieces)
+            {
+                List<Piece> extraConnectedPieces = new();
+
+                CheckDirection(pie, new Vector2Int(1, 0), extraConnectedPieces);
+
+                CheckDirection(pie, new Vector2Int(-1, 0), extraConnectedPieces);
+
+                if (extraConnectedPieces.Count >= 2)
+                {
+                    Debug.Log("긴 세로 매칭 성사");
+                    extraConnectedPieces.AddRange(_matchedResults.connectedPieces);
+
+                    return new MatchResult
+                    {
+                        connectedPieces = extraConnectedPieces,
+                        direction = MatchDirection.Super,
+                    };
+                }
+            }
+            return new MatchResult
+            {
+                connectedPieces = _matchedResults.connectedPieces,
+                direction = _matchedResults.direction
+            };
+        }
+        else
+        {
+            return null;
+        }
     }
 
     /// <summary>
