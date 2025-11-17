@@ -416,20 +416,6 @@ public class BoardSystem : MonoBehaviour
         {
             pieceOnTargetNode.MoveToTarget(targetNode.transform.position);
         }
-        GameObject temp = _boardPieces[currentPiece.xIndex, currentPiece.yIndex].piece; //스왑될 포션을 저장하는 변수
-        _boardPieces[currentPiece.xIndex, currentPiece.yIndex].piece = temp;
-        
-        //인덱스 업데이트
-        int tempXIndex = currentPiece.xIndex;
-        int tempYIndex = currentPiece.yIndex;
-        currentPiece.xIndex = targetPiece.xIndex;
-        currentPiece.yIndex = targetPiece.yIndex;
-        targetPiece.xIndex = tempXIndex;
-        targetPiece.yIndex = tempYIndex;
-        
-        currentPiece.MoveToTarget(_boardPieces[targetPiece.xIndex, targetPiece.yIndex].piece.transform.position);
-        
-        targetPiece.MoveToTarget(_boardPieces[currentPiece.xIndex, currentPiece.yIndex].piece.transform.position);
     }
 
     // ReSharper disable Unity.PerformanceAnalysis
