@@ -90,16 +90,16 @@ public class BoardSystem : MonoBehaviour
             // 1. 마우스 스크린 좌표 읽기
             Vector2 mousePos = Mouse.current.position.ReadValue();
 
-            // 2. 스크린 좌표 → Ray
-            Ray ray = mainCam.ScreenPointToRay(mousePos);
+            // 2. 스크린 좌표 → 월드 좌표 (2D 전용)
+            Vector3 worldPos = mainCam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, 0f));
 
-            // 3. 2D Raycast
-            RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+            // 3. 해당 지점을 덮는 2D 콜라이더 찾기
+            Collider2D collider = Physics2D.OverlapPoint(worldPos);
 
             // 4. 맞은 콜라이더가 있고, 거기에 Piece가 붙어 있는지 확인
-            if (hit.collider != null)
+            if (collider != null)
             {
-                Piece piece = hit.collider.gameObject.GetComponent<Piece>();
+                Piece piece = collider.gameObject.GetComponent<Piece>();
                 if (piece != null)
                 {
                     if (isProcessingMoving)
@@ -187,7 +187,9 @@ public class BoardSystem : MonoBehaviour
     {
         Debug.Log($"Checking board to match pos");
         bool hasMatches = false;
-        
+
+        ResetMatchedFlags();
+
         //제거할 피스들(매치된 피스들)을 저장할 리스트
         List<Piece> piecesToRemove = new List<Piece>();
         
@@ -233,6 +235,32 @@ public class BoardSystem : MonoBehaviour
 
         //매치된 피스들 출력
         return hasMatches;
+    }
+
+    /// <summary>
+    /// 매치 탐색을 시작하기 전에 모든 피스의 매치 플래그를 초기화한다.
+    /// ProcessMatches 코루틴에서 hasMatched 값이 잘못 유지되는 문제 방지
+    /// </summary>
+    private void ResetMatchedFlags()
+    {
+        if (_boardPieces == null)
+            return;
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                Node node = _boardPieces[x, y];
+                if (node == null || !node.isUsable || node.piece == null)
+                    continue;
+
+                Piece piece = node.piece.GetComponent<Piece>();
+                if (piece != null)
+                {
+                    piece.isMatched = false;
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -387,7 +415,9 @@ public class BoardSystem : MonoBehaviour
         if (!IsAdjacent(currentPiece, targetPiece)) 
             return;
         DoSwap(currentPiece, targetPiece);
+        
         isProcessingMoving = true;
+        
         StartCoroutine(ProcessMatches(currentPiece, targetPiece));
     }
 
@@ -424,15 +454,35 @@ public class BoardSystem : MonoBehaviour
     {
         yield return new WaitForSeconds(0.2f);
 
-        bool hasMatched = CheckBoardToMatches();
+        bool hasMatchOnCurrent = HasMatchAt(currentPiece);
+        bool hasMatchOnTarget = HasMatchAt(targetPiece);
 
-        if (!hasMatched)
+        Debug.Log($"현제 매치 상태 = {hasMatchOnCurrent || hasMatchOnTarget}");
+
+        if (!hasMatchOnCurrent && !hasMatchOnTarget)
         {
             DoSwap(currentPiece, targetPiece);
         }
+
         isProcessingMoving = false;
+<<<<<<< HEAD
         
         //StartCoroutine(ProcessMatches(currentPiece, targetPiece));
+=======
+    }
+
+    private bool HasMatchAt(Piece piece)
+    {
+        if (piece == null)
+        {
+            return false;
+        }
+
+        ResetMatchedFlags();
+        MatchResult matchResult = IsConnected(piece);
+
+        return matchResult.connectedPieces != null && matchResult.connectedPieces.Count >= 3;
+>>>>>>> 93f17cfd49d6f23dbcbffed9c6cd74de91fc0507
     }
     
     /// <summary>
