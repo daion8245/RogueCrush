@@ -465,10 +465,6 @@ public class BoardSystem : MonoBehaviour
         }
 
         isProcessingMoving = false;
-<<<<<<< HEAD
-        
-        //StartCoroutine(ProcessMatches(currentPiece, targetPiece));
-=======
     }
 
     private bool HasMatchAt(Piece piece)
@@ -482,7 +478,6 @@ public class BoardSystem : MonoBehaviour
         MatchResult matchResult = IsConnected(piece);
 
         return matchResult.connectedPieces != null && matchResult.connectedPieces.Count >= 3;
->>>>>>> 93f17cfd49d6f23dbcbffed9c6cd74de91fc0507
     }
     
     /// <summary>

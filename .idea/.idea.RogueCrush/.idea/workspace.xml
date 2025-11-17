@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="93b2bdf8-8099-42fb-943b-7d0795f13de6" name="변경" comment="">
+    <list default="true" id="93b2bdf8-8099-42fb-943b-7d0795f13de6" name="변경" comment="포션 스왑 시스템 제작(오류!!!)&#10;&#10;살려줘요">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.RogueCrush/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.RogueCrush/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/BoardSystem.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/BoardSystem.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Piece.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Piece.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,8 +35,8 @@
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="mock://C:/UnityProjects/RogueCrush/Assets/Scripts/BoardSystem.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/MatchResult.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/3209c419f8514dc7af6f7bbce69cabc61f7200/68/f5a789a9/MonoBehaviour.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProjectColorInfo">{
@@ -141,7 +140,8 @@
       <workItem from="1762330715437" duration="6992000" />
       <workItem from="1762687835114" duration="1117000" />
       <workItem from="1762733266053" duration="6646000" />
-      <workItem from="1763346502940" duration="2998000" />
+      <workItem from="1763346502940" duration="8937000" />
+      <workItem from="1763422954333" duration="43000" />
     </task>
     <task id="LOCAL-00001" summary="대충 설명">
       <option name="closed" value="true" />
@@ -230,7 +230,8 @@
     <MESSAGE value="포션 스와핑 제작 V0.3&#10;&#10;포션 매치 인식 시스템 제작(완료)" />
     <MESSAGE value="클래스,필드,메서드 이름 용어에 맞게 변경" />
     <MESSAGE value="Merge remote-tracking branch 'origin/main'" />
-    <option name="LAST_COMMIT_MESSAGE" value="Merge remote-tracking branch 'origin/main'" />
+    <MESSAGE value="포션 스왑 시스템 제작(오류!!!)&#10;&#10;살려줘요" />
+    <option name="LAST_COMMIT_MESSAGE" value="포션 스왑 시스템 제작(오류!!!)&#10;&#10;살려줘요" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
