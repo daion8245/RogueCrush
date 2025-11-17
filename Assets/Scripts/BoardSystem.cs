@@ -390,26 +390,31 @@ public class BoardSystem : MonoBehaviour
     }
 
     /// <summary>
-    /// 스왑될 포션을 받아 스왑시키는 함수
+    /// 두 노드가 가진 피스를 서로 교환하고 좌표 정보를 동기화한다.
     /// </summary>
     /// <param name="currentPiece"></param>
     /// <param name="targetPiece"></param>
     private void DoSwap(Piece currentPiece, Piece targetPiece)
     {
-        GameObject temp = _boardPieces[currentPiece.xIndex, currentPiece.yIndex].piece; //스왑될 포션을 저장하는 변수
-        _boardPieces[currentPiece.xIndex, currentPiece.yIndex].piece = temp;
-        
-        //인덱스 업데이트
-        int tempXIndex = currentPiece.xIndex;
-        int tempYIndex = currentPiece.yIndex;
-        currentPiece.xIndex = targetPiece.xIndex;
-        currentPiece.yIndex = targetPiece.yIndex;
-        targetPiece.xIndex = tempXIndex;
-        targetPiece.yIndex = tempYIndex;
-        
-        currentPiece.MoveToTarget(_boardPieces[targetPiece.xIndex, targetPiece.yIndex].piece.transform.position);
-        
-        targetPiece.MoveToTarget(_boardPieces[targetPiece.xIndex, targetPiece.yIndex].piece.transform.position);
+        Node currentNode = _boardPieces[currentPiece.xIndex, currentPiece.yIndex];
+        Node targetNode = _boardPieces[targetPiece.xIndex, targetPiece.yIndex];
+
+        GameObject temp = currentNode.piece; // 현재 노드의 피스를 임시 저장
+        currentNode.SetPiece(targetNode.piece);
+        targetNode.SetPiece(temp);
+
+        Piece pieceOnCurrentNode = currentNode.piece != null ? currentNode.piece.GetComponent<Piece>() : null;
+        Piece pieceOnTargetNode = targetNode.piece != null ? targetNode.piece.GetComponent<Piece>() : null;
+
+        if (pieceOnCurrentNode != null)
+        {
+            pieceOnCurrentNode.MoveToTarget(currentNode.transform.position);
+        }
+
+        if (pieceOnTargetNode != null)
+        {
+            pieceOnTargetNode.MoveToTarget(targetNode.transform.position);
+        }
     }
 
     // ReSharper disable Unity.PerformanceAnalysis
