@@ -90,16 +90,16 @@ public class BoardSystem : MonoBehaviour
             // 1. 마우스 스크린 좌표 읽기
             Vector2 mousePos = Mouse.current.position.ReadValue();
 
-            // 2. 스크린 좌표 → Ray
-            Ray ray = mainCam.ScreenPointToRay(mousePos);
+            // 2. 스크린 좌표 → 월드 좌표 (2D 전용)
+            Vector3 worldPos = mainCam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, 0f));
 
-            // 3. 2D Raycast
-            RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+            // 3. 해당 지점을 덮는 2D 콜라이더 찾기
+            Collider2D collider = Physics2D.OverlapPoint(worldPos);
 
             // 4. 맞은 콜라이더가 있고, 거기에 Piece가 붙어 있는지 확인
-            if (hit.collider != null)
+            if (collider != null)
             {
-                Piece piece = hit.collider.gameObject.GetComponent<Piece>();
+                Piece piece = collider.gameObject.GetComponent<Piece>();
                 if (piece != null)
                 {
                     if (isProcessingMoving)
