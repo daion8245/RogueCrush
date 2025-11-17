@@ -454,16 +454,30 @@ public class BoardSystem : MonoBehaviour
     {
         yield return new WaitForSeconds(0.2f);
 
-        bool hasMatched = CheckBoardToMatches();
-        
-        Debug.Log($"현제 매치 상태 = {hasMatched}");
+        bool hasMatchOnCurrent = HasMatchAt(currentPiece);
+        bool hasMatchOnTarget = HasMatchAt(targetPiece);
 
-        if (!hasMatched)
+        Debug.Log($"현제 매치 상태 = {hasMatchOnCurrent || hasMatchOnTarget}");
+
+        if (!hasMatchOnCurrent && !hasMatchOnTarget)
         {
             DoSwap(currentPiece, targetPiece);
         }
-        
+
         isProcessingMoving = false;
+    }
+
+    private bool HasMatchAt(Piece piece)
+    {
+        if (piece == null)
+        {
+            return false;
+        }
+
+        ResetMatchedFlags();
+        MatchResult matchResult = IsConnected(piece);
+
+        return matchResult.connectedPieces != null && matchResult.connectedPieces.Count >= 3;
     }
     
     /// <summary>
