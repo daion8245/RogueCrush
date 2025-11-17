@@ -427,14 +427,15 @@ public class BoardSystem : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
 
         bool hasMatched = CheckBoardToMatches();
+        
+        Debug.Log($"현제 매치 상태 = {hasMatched}");
 
         if (!hasMatched)
         {
             DoSwap(currentPiece, targetPiece);
         }
-        isProcessingMoving = false;
         
-        StartCoroutine(ProcessMatches(currentPiece, targetPiece));
+        isProcessingMoving = false;
     }
     
     /// <summary>
