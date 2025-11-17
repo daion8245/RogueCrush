@@ -187,7 +187,9 @@ public class BoardSystem : MonoBehaviour
     {
         Debug.Log($"Checking board to match pos");
         bool hasMatches = false;
-        
+
+        ResetMatchedFlags();
+
         //제거할 피스들(매치된 피스들)을 저장할 리스트
         List<Piece> piecesToRemove = new List<Piece>();
         
@@ -233,6 +235,32 @@ public class BoardSystem : MonoBehaviour
 
         //매치된 피스들 출력
         return hasMatches;
+    }
+
+    /// <summary>
+    /// 매치 탐색을 시작하기 전에 모든 피스의 매치 플래그를 초기화한다.
+    /// ProcessMatches 코루틴에서 hasMatched 값이 잘못 유지되는 문제 방지
+    /// </summary>
+    private void ResetMatchedFlags()
+    {
+        if (_boardPieces == null)
+            return;
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                Node node = _boardPieces[x, y];
+                if (node == null || !node.isUsable || node.piece == null)
+                    continue;
+
+                Piece piece = node.piece.GetComponent<Piece>();
+                if (piece != null)
+                {
+                    piece.isMatched = false;
+                }
+            }
+        }
     }
 
     /// <summary>
