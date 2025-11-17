@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5060737139917133946}
   - component: {fileID: 7219233769677554206}
   - component: {fileID: -7678074891697179300}
+  - component: {fileID: -7521317370895912319}
   m_Layer: 0
   m_Name: Purple Potion
   m_TagString: Untagged
@@ -126,10 +127,56 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 550f6fdef5b1c764596840fc1e575a1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Potion
-  potionType: 2
+  pieceType: 0
   xIndex: 0
   yIndex: 0
   isMatched: 0
   currentPos: {x: 0, y: 0}
   targetPos: {x: 0, y: 0}
   isMoving: 0
+--- !u!61 &-7521317370895912319
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6596342118991952337}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 0.15, y: 0.2}
+    newSize: {x: 0.15, y: 0.2}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 0.15, y: 0.2}
+  m_EdgeRadius: 0

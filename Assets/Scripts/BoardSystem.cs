@@ -409,7 +409,7 @@ public class BoardSystem : MonoBehaviour
         
         currentPiece.MoveToTarget(_boardPieces[targetPiece.xIndex, targetPiece.yIndex].piece.transform.position);
         
-        targetPiece.MoveToTarget(_boardPieces[targetPiece.xIndex, targetPiece.yIndex].piece.transform.position);
+        targetPiece.MoveToTarget(_boardPieces[currentPiece.xIndex, currentPiece.yIndex].piece.transform.position);
     }
 
     // ReSharper disable Unity.PerformanceAnalysis

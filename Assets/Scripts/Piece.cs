@@ -56,6 +56,9 @@ public class Piece : MonoBehaviour
             
             yield return null;
         }
+
+        transform.position = target;
+        isMoving = false;
     }
 }
 
