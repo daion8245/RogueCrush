@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/Assets/Scripts/MatchResult.cs">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/Assets/Scripts/MatchResult.cs" />
+              <option name="originalContent" value="using System.Collections.Generic;&#10;using UnityEngine;&#10;&#10;/// &lt;summary&gt;&#10;/// 포션들의 매치 상태를 나타내는 열거형&#10;/// &lt;/summary&gt;&#10;public enum MatchDirection&#10;{&#10;    Horizontal, //가로 3&#10;    Vertical, //세로 3&#10;    LongVertical, //세로 4&#10;    LongHorizontal, //가로 4&#10;    Super, //5개 이상&#10;    None, //없음&#10;}&#10;&#10;/// &lt;summary&gt;&#10;/// 포션 매치 결과를 나타내는 클래스&#10;/// &lt;/summary&gt;&#10;public class MatchResult&#10;{&#10;    public List&lt;Piece&gt; connectedPotions;&#10;    public MatchDirection direction;&#10;}&#10;" />
+              <option name="updatedContent" value="using System.Collections.Generic;&#10;&#10;/// &lt;summary&gt;&#10;/// 피스들의 매치 상태를 나타내는 열거형&#10;/// &lt;/summary&gt;&#10;public enum MatchDirection&#10;{&#10;    Horizontal, //가로 3&#10;    Vertical, //세로 3&#10;    LongVertical, //세로 4&#10;    LongHorizontal, //가로 4&#10;    Super, //5개 이상&#10;    None, //없음&#10;}&#10;&#10;/// &lt;summary&gt;&#10;/// 피스 매치 결과를 나타내는 클래스&#10;/// &lt;/summary&gt;&#10;public class MatchResult&#10;{&#10;    public List&lt;Piece&gt; connectedPieces;&#10;    public MatchDirection direction;&#10;}" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/Assets/Scripts/Node.cs">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/Assets/Scripts/Node.cs" />
+              <option name="originalContent" value="using UnityEngine;&#10;&#10;public class Node : MonoBehaviour&#10;{&#10;    public bool isUsable; //공간을 물약으로 채울 수 있는지 여부를 결정합니다.&#10;&#10;    public GameObject piece; //Node가 현재 가지고 있는 포션 오브젝트&#10;&#10;    //생성자&#10;    // public Node(bool isUsable, GameObject piece)&#10;    // {&#10;    //     this.isUsable = isUsable;&#10;    //     this.piece = piece;&#10;    // }&#10;&#10;    // 추가: 셀 좌표&#10;    public int x;&#10;    public int y;&#10;&#10;    public bool IsEmpty =&gt; piece == null; // 변수명은 어디까지나 소문자로 시작할 것 아니면 걍 함수로 바꾸셈&#10;    // public bool IsEmpty() =&gt; piece == null;&#10;    &#10;    // 칸 초기화(생성자 대신 사용)&#10;    public void Initialize(int kX, int kY, bool kUsable = true) // 파라미터 이름 바꿔놈 앞에 접두사 붙여서 구분하셈 this 보다는&#10;    {&#10;        x = kX;&#10;        y = kY;&#10;        isUsable = kUsable;&#10;    }&#10;&#10;    // 칸에 포션 배치 + 좌표 동기화&#10;    public void SetPiece(GameObject go)&#10;    {&#10;        piece = go;&#10;        var p = go != null ? go.GetComponent&lt;Piece&gt;() : null;&#10;        if (p != null)&#10;        {&#10;            p.SetIndices(x, y); // 기존 SetIndices 호출 보완&#10;        }&#10;    }&#10;&#10;    public void Clear() =&gt; piece = null;&#10;}&#10;" />
+              <option name="updatedContent" value="using UnityEngine;&#10;&#10;public class Node : MonoBehaviour&#10;{&#10;    public bool isUsable; // 공간을 피스로 채울 수 있는지 여부를 결정합니다.&#10;&#10;    public GameObject piece; // Node가 현재 가지고 있는 피스 오브젝트&#10;&#10;    //생성자&#10;    // public Node(bool isUsable, GameObject piece)&#10;    // {&#10;    //     this.isUsable = isUsable;&#10;    //     this.piece = piece;&#10;    // }&#10;&#10;    // 추가: 셀 좌표&#10;    public int x;&#10;    public int y;&#10;&#10;    public bool IsEmpty =&gt; piece == null; // 변수명은 어디까지나 소문자로 시작할 것 아니면 걍 함수로 바꾸셈&#10;    // public bool IsEmpty() =&gt; piece == null;&#10;    &#10;    // 칸 초기화(생성자 대신 사용)&#10;    public void Initialize(int kX, int kY, bool kUsable = true) // 파라미터 이름 바꿔놈 앞에 접두사 붙여서 구분하셈 this 보다는&#10;    {&#10;        x = kX;&#10;        y = kY;&#10;        isUsable = kUsable;&#10;    }&#10;&#10;    // 칸에 피스 배치 + 좌표 동기화&#10;    public void SetPiece(GameObject go)&#10;    {&#10;        piece = go;&#10;        var p = go != null ? go.GetComponent&lt;Piece&gt;() : null;&#10;        if (p != null)&#10;        {&#10;            p.SetIndices(x, y); // 기존 SetIndices 호출 보완&#10;        }&#10;    }&#10;&#10;    public void Clear() =&gt; piece = null;&#10;}" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

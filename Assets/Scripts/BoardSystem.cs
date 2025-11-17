@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -50,6 +51,25 @@ public class BoardSystem : MonoBehaviour
     private void Start()
     {
         InitializeBoard();
+    }
+
+    private void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+            
+            if (hit.collider is not null && hit.collider.gameObject.GetComponent<Piece>())
+            {
+                if(isProcessingMoving)
+                    return;
+                
+                Piece piece = hit.collider.gameObject.GetComponent<Piece>();
+                Debug.Log($"{piece.gameObject} <= 해당 피스를 클릭했습니다.");
+            }
+            
+        }
     }
 
     /// <summary>
@@ -294,6 +314,10 @@ public class BoardSystem : MonoBehaviour
 
     #region pieceSwaping
 
+    /// <summary>
+    /// 이동시킬 피스를 선택하는 메서드
+    /// </summary>
+    /// <param name="piece"></param>
     public void SelectPiece(Piece piece)
     {
         if (selectedPiece == null)
@@ -320,9 +344,57 @@ public class BoardSystem : MonoBehaviour
     /// <param name="targetPiece">이동될 위치의 대상</param>
     private void SwapPieces(Piece currentPiece, Piece targetPiece)
     {
+        if (!IsAdjacent(currentPiece, targetPiece)) 
+            return;
+        DoSwap(currentPiece, targetPiece);
         isProcessingMoving = true;
     }
+
+    /// <summary>
+    /// 스왑될 포션을 받아 스왑시키는 함수
+    /// </summary>
+    /// <param name="currentPiece"></param>
+    /// <param name="targetPiece"></param>
+    private void DoSwap(Piece currentPiece, Piece targetPiece)
+    {
+        GameObject temp = _boardPieces[currentPiece.xIndex, currentPiece.yIndex].piece; //스왑될 포션을 저장하는 변수
+        _boardPieces[currentPiece.xIndex, currentPiece.yIndex].piece = temp;
+        
+        //인덱스 업데이트
+        int tempXIndex = currentPiece.xIndex;
+        int tempYIndex = currentPiece.yIndex;
+        currentPiece.xIndex = targetPiece.xIndex;
+        currentPiece.yIndex = targetPiece.yIndex;
+        targetPiece.xIndex = tempXIndex;
+        targetPiece.yIndex = tempYIndex;
+        
+        currentPiece.MoveToTarget(_boardPieces[targetPiece.xIndex, targetPiece.yIndex].piece.transform.position);
+        
+        targetPiece.MoveToTarget(_boardPieces[targetPiece.xIndex, targetPiece.yIndex].piece.transform.position);
+    }
+
+    // ReSharper disable Unity.PerformanceAnalysis
+    private IEnumerator ProcessMatches(Piece currentPiece, Piece targetPiece)
+    {
+        yield return new WaitForSeconds(0.2f);
+
+        bool hasMatched = CheckBoardToMatches();
+
+        if (!hasMatched)
+        {
+            DoSwap(currentPiece, targetPiece);
+        }
+        isProcessingMoving = false;
+        
+        StartCoroutine(ProcessMatches(currentPiece, targetPiece));
+    }
     
+    /// <summary>
+    /// 두 피스가 인접해있는지 확인하는 메서드
+    /// </summary>
+    /// <param name="currentPiece"></param>
+    /// <param name="targetPiece"></param>
+    /// <returns></returns>
     private bool IsAdjacent(Piece currentPiece, Piece targetPiece)
     => Mathf.Abs(currentPiece.xIndex - targetPiece.xIndex)
         + Mathf.Abs(currentPiece.yIndex - targetPiece.yIndex) == 1;

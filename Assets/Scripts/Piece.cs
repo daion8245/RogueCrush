@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /* 구조 설명: 보드(Board) > 노드(Node) > 피스(Piece)
@@ -32,9 +33,29 @@ public class Piece : MonoBehaviour
         yIndex = y;
     }
 
-    public void MovePiece()
+    public void MoveToTarget(Vector2 targetPositon)
     {
+        StartCoroutine(MoveCoroutine(targetPositon));
+    }
+
+    private IEnumerator MoveCoroutine(Vector2 target)
+    {
+        isMoving =  true;
+        float duration = 0.2f;
         
+        Vector2 startPos = transform.position;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < duration)
+        {
+            float time = elapsedTime / duration;
+            
+            transform.position = Vector2.Lerp(startPos, target, time);
+            
+            elapsedTime += Time.deltaTime;
+            
+            yield return null;
+        }
     }
 }
 
