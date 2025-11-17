@@ -387,7 +387,9 @@ public class BoardSystem : MonoBehaviour
         if (!IsAdjacent(currentPiece, targetPiece)) 
             return;
         DoSwap(currentPiece, targetPiece);
+        
         isProcessingMoving = true;
+        
         StartCoroutine(ProcessMatches(currentPiece, targetPiece));
     }
 
