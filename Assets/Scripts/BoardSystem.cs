@@ -432,7 +432,7 @@ public class BoardSystem : MonoBehaviour
         }
         isProcessingMoving = false;
         
-        StartCoroutine(ProcessMatches(currentPiece, targetPiece));
+        //StartCoroutine(ProcessMatches(currentPiece, targetPiece));
     }
     
     /// <summary>
