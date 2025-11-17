@@ -105,6 +105,7 @@ public class BoardSystem : MonoBehaviour
                     if (isProcessingMoving)
                         return;
 
+                    SelectPiece(piece);
                     Debug.Log($"{piece.gameObject} <= 해당 피스를 클릭했습니다.");
                 }
             }
