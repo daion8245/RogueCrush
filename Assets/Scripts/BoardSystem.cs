@@ -183,7 +183,7 @@ public class BoardSystem : MonoBehaviour
     /// Debug.Log로 매치 발생 상황 출력
     /// </summary>
     /// <returns></returns>
-    public bool CheckBoardToMatches()
+    public bool CheckBoardToMatches(bool _takeAction)
     {
         Debug.Log($"Checking board to match pos");
         bool hasMatches = false;
@@ -235,9 +235,80 @@ public class BoardSystem : MonoBehaviour
             }
         }
 
+        if (_takeAction)
+        {
+            RemoveAndRefiil(piecesToRemove);
+        }
         //매치된 피스들 출력
         return hasMatches;
     }
+
+    private void RemoveAndRefiil(List<Piece> _piecesToRemove)
+    {
+        // piecesToRemove 위치에 있는 포션들을 지우기
+        foreach (Piece piece in _piecesToRemove)
+        {
+            // x와 y 인덱스를 얻어오고 저장
+            int _xIndex = piece.xIndex;
+            int _yIndex = piece.yIndex;
+
+            // 포션 지우기
+            Destroy(piece.gameObject);
+
+            // 포션을 지워서 포션 보드가 null이니까 포션 보드에 빈 노드 생성
+            _boardPieces[_xIndex, _yIndex] = new Node()
+            {
+                isUsable = true,
+                piece = null
+            };
+        }
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                Debug.Log($"X:{x}, Y:{y} 위치가 비었습니다. 리필을 시도합니다");
+                RefillPotion(x,y);
+            }
+        }
+    }
+
+    private void RefillPotion(int x, int y)
+    {
+        // y 오프셋
+        int yOffset = 1;
+
+        // 현재 셀 위에 있는 셀이 null 이고 보드 아래에 있는 경우
+        while (y + yOffset < height && _boardPieces[x,y + yOffset].piece == null)
+        {
+            // y 오프셋 증가
+            Debug.Log($"위에 있는 포션이 null 입니다. 하지만 저는 아직 보드의 맨 위에 있지 않습니다. " +
+                $"그렇기에 저는 yOffset을 더하고 다시 시도하려 합니다. 현재 오프셋 : {yOffset} , 1을 더합니다.");
+            yOffset++;
+        }
+
+        // 보더 맨위에 닿았거나 포션을 찾았을 경우
+
+        if (y + yOffset < height && _boardPieces[x, y + yOffset].piece != null)
+        {
+            // 포션을 찾았을떄
+            Piece pieceAbove = _boardPieces[x, y + yOffset].piece.GetComponent<Piece>();
+
+            // 맞는 위치에 포션을 옮기기
+            Vector3 targetPos = new Vector3(x - spacingX, y - spacingY, pieceAbove.transform.position.z);
+            Debug.Log("");
+        }
+    }
+    #region 계단식 포션
+
+    // 지우고 채우기 ( 포션 리스트 )
+
+    // 포션 리필
+
+    // 맨위에 포션 생성
+
+    // findindexoflowestnull
+    #endregion
 
     private MatchResult SuperMatch(MatchResult _matchedResults)
     {
