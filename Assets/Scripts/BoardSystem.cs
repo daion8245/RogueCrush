@@ -299,10 +299,7 @@ public class BoardSystem : MonoBehaviour
                 direction = _matchedResults.direction
             };
         }
-        else
-        {
-            return null;
-        }
+        return null;
     }
 
     /// <summary>
