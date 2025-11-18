@@ -36,7 +36,7 @@ public class BoardSystem : MonoBehaviour
 
     [Header("Optional Parents")] public Transform piecesRoot; // 피스 부모 오브젝트
 
-    private Camera mainCam;
+    private Camera _mainCam;
 
     private void Awake()
     {
@@ -53,7 +53,7 @@ public class BoardSystem : MonoBehaviour
 
     private void Start()
     {
-        mainCam = Camera.main;
+        _mainCam = Camera.main;
         InitializeBoard();
     }
 
@@ -91,16 +91,16 @@ public class BoardSystem : MonoBehaviour
             Vector2 mousePos = Mouse.current.position.ReadValue();
 
             // 2. 스크린 좌표 → 월드 좌표 (2D 전용)
-            Vector3 worldPos = mainCam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, 0f));
+            Vector3 worldPos = _mainCam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, 0f));
 
             // 3. 해당 지점을 덮는 2D 콜라이더 찾기
-            Collider2D collider = Physics2D.OverlapPoint(worldPos);
+            Collider2D overlapPoint = Physics2D.OverlapPoint(worldPos);
 
             // 4. 맞은 콜라이더가 있고, 거기에 Piece가 붙어 있는지 확인
-            if (collider != null)
+            if (overlapPoint is not null)
             {
-                Piece piece = collider.gameObject.GetComponent<Piece>();
-                if (piece != null)
+                Piece piece = overlapPoint.gameObject.GetComponent<Piece>();
+                if (piece is not null)
                 {
                     if (isProcessingMoving)
                         return;
@@ -456,7 +456,7 @@ public class BoardSystem : MonoBehaviour
     /// <param name="piece"></param>
     public void SelectPiece(Piece piece)
     {
-        if (selectedPiece == null)
+        if (selectedPiece is null)
         {
             Debug.Log($"{piece} 선택됨");
             selectedPiece = piece;
@@ -503,15 +503,15 @@ public class BoardSystem : MonoBehaviour
         currentNode.SetPiece(targetNode.piece);
         targetNode.SetPiece(temp);
 
-        Piece pieceOnCurrentNode = currentNode.piece != null ? currentNode.piece.GetComponent<Piece>() : null;
-        Piece pieceOnTargetNode = targetNode.piece != null ? targetNode.piece.GetComponent<Piece>() : null;
+        Piece pieceOnCurrentNode = currentNode.piece?.GetComponent<Piece>();
+        Piece pieceOnTargetNode = targetNode.piece ? targetNode.piece.GetComponent<Piece>() : null;
 
-        if (pieceOnCurrentNode != null)
+        if (pieceOnCurrentNode)
         {
             pieceOnCurrentNode.MoveToTarget(currentNode.transform.position);
         }
 
-        if (pieceOnTargetNode != null)
+        if (pieceOnTargetNode)
         {
             pieceOnTargetNode.MoveToTarget(targetNode.transform.position);
         }
