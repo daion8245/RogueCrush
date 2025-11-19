@@ -161,7 +161,7 @@ public class BoardSystem : MonoBehaviour
             }
         }
 
-        CheckBoardToMatches();
+        CheckBoardToMatches(true                                                                                                                                                                      );
     }
 
     private void DestroyPieces()
