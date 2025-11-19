@@ -267,8 +267,11 @@ public class BoardSystem : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
-                Debug.Log($"X:{x}, Y:{y} 위치가 비었습니다. 리필을 시도합니다");
-                RefillPotion(x,y);
+                if (_boardPieces[x, y].piece == null)
+                {
+                    Debug.Log($"X:{x}, Y:{y} 위치가 비었습니다. 리필을 시도합니다");
+                    RefillPotion(x, y);
+                }
             }
         }
     }
@@ -296,9 +299,40 @@ public class BoardSystem : MonoBehaviour
 
             // 맞는 위치에 포션을 옮기기
             Vector3 targetPos = new Vector3(x - spacingX, y - spacingY, pieceAbove.transform.position.z);
-            Debug.Log("");
+            Debug.Log($"보드를 채우는동안 발견한 포션의 위치 : [{x},{y + yOffset}] 이 위치로 옮길게요 : [{x},{y}]");
+            // 위치로 옮기기
+            pieceAbove.MoveToTarget(targetPos);
+            // 인덱스 업데이트
+            pieceAbove.SetIndices(x, y);
+            // 포션보드 업데이트
+            _boardPieces[x, y] = _boardPieces[x, y + yOffset];
+            // 물약이 나온 위치를 null 로 설정
+            _boardPieces[x, y + yOffset] = new Node()
+            {
+                isUsable = true,
+                piece = null
+            };
+        }
+
+        // 맨 위에 닿았는데 포션을 못찾은 경우
+        if (y + yOffset == height)
+        {
+            Debug.Log("맨위로 갔지만 포션을 찾지 못했습니다");
+            SpawnPieceAtTop(x);
         }
     }
+
+    private void SpawnPieceAtTop(int x)
+    {
+        int index = FindIndexOfLowestNull(x);
+    }
+
+    private int FindIndexOfLowestNull(int x)
+    {
+        throw new System.NotImplementedException();
+    }
+
+
     #region 계단식 포션
 
     // 지우고 채우기 ( 포션 리스트 )
