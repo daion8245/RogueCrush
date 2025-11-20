@@ -161,7 +161,7 @@ public class BoardSystem : MonoBehaviour
             }
         }
 
-        CheckBoardToMatches(true                                                                                                                                                                      );
+        CheckBoardToMatches(true);
     }
 
     private void DestroyPieces()
@@ -624,8 +624,8 @@ public class BoardSystem : MonoBehaviour
     {
         yield return new WaitForSeconds(0.2f);
 
-        bool hasMatchOnCurrent = HasMatchAt(currentPiece);
-        bool hasMatchOnTarget = HasMatchAt(targetPiece);
+        bool hasMatchOnCurrent = CheckBoardToMatches(true);
+        bool hasMatchOnTarget = CheckBoardToMatches(true);
 
         Debug.Log($"현제 매치 상태 = {hasMatchOnCurrent || hasMatchOnTarget}");
 
