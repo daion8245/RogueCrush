@@ -161,17 +161,7 @@ public class BoardSystem : MonoBehaviour
             }
         }
 
-        bool hasMatchesOnStart = CheckBoardToMatches(false);
-
-        if (hasMatchesOnStart)
-        {
-            Debug.Log("We have matches let's re-create the board");
-            InitializeBoard();
-        }
-        else
-        {
-            Debug.Log("There are no matches, it's time to start the game!");
-        }
+        CheckBoardToMatches(true);
     }
 
     private void DestroyPieces()
@@ -690,24 +680,19 @@ public class BoardSystem : MonoBehaviour
     {
         yield return new WaitForSeconds(0.2f);
 
-        bool hasMatch = CheckBoardToMatches(true);
+        bool hasMatchOnCurrent = CheckBoardToMatches(true);
+        bool hasMatchOnTarget = CheckBoardToMatches(true);
 
-        if (hasMatch)
-        {
-            Debug.Log("매치가 발생했습니다. 연쇄를 확인합니다.");
-            yield return new WaitForSeconds(0.4f);
+        Debug.Log($"현제 매치 상태 = {hasMatchOnCurrent || hasMatchOnTarget}");
 
-            while (CheckBoardToMatches(true))
-            {
-                yield return new WaitForSeconds(0.4f);
-            }
-        }
-        else
+        if (!hasMatchOnCurrent && !hasMatchOnTarget)
         {
             DoSwap(currentPiece, targetPiece);
         }
 
         isProcessingMoving = false;
+        
+        //StartCoroutine(ProcessMatches(currentPiece, targetPiece));
 
     }
 
