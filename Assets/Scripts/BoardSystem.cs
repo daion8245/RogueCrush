@@ -325,11 +325,67 @@ public class BoardSystem : MonoBehaviour
     private void SpawnPieceAtTop(int x)
     {
         int index = FindIndexOfLowestNull(x);
+        if (index < 0)
+            return;
+
+        int locationToMoveTo = height - index;
+
+        int randomIndex = Random.Range(0, piecePrefabs.Length);
+        Vector2 spawnPos = new Vector2(x - spacingX, height - spacingY);
+
+        Transform parentForPiece = piecesRoot != null ? piecesRoot :
+                                    (_boardRoot != null ? _boardRoot.transform : transform);
+
+        GameObject newPiece = Instantiate(
+            piecePrefabs[randomIndex],
+            spawnPos,
+            Quaternion.identity,
+            parentForPiece
+        );
+
+        Piece newPieceComp = newPiece.GetComponent<Piece>();
+        if (newPieceComp != null)
+        {
+            newPieceComp.SetIndices(x, index);
+        }
+
+        if (_boardPieces[x, index] == null)
+        {
+            GameObject nodeGo = new GameObject($"Node_{x}_{index}");
+            nodeGo.transform.SetParent(_boardRoot != null ? _boardRoot.transform : transform, false);
+            nodeGo.transform.localPosition = new Vector2(x - spacingX, index - spacingY);
+
+            Node node = nodeGo.AddComponent<Node>();
+            node.Initialize(x, index);
+            _boardPieces[x, index] = node;
+
+            piecesToDestroy.Add(nodeGo);
+        }
+
+        _boardPieces[x, index].SetPiece(newPiece);
+
+        Vector3 targetPosition = new Vector3(
+            newPiece.transform.position.x,
+            newPiece.transform.position.y - locationToMoveTo,
+            newPiece.transform.position.z
+        );
+
+        newPieceComp?.MoveToTarget(targetPosition);
     }
 
     private int FindIndexOfLowestNull(int x)
     {
-        throw new System.NotImplementedException();
+        int lowestNull = -1;
+
+        for (int y = height - 1; y >= 0; y--)
+        {
+            if (_boardPieces[x, y].piece == null)
+            {
+                lowestNull = y;
+            }
+        }
+
+        return lowestNull;
     }
 
 
@@ -355,7 +411,7 @@ public class BoardSystem : MonoBehaviour
 
                 CheckDirection(pie, new Vector2Int(0, 1), extraConnectedPieces);
 
-                CheckDirection(pie, new Vector2Int(-0, 1), extraConnectedPieces);
+                CheckDirection(pie, new Vector2Int(0, -1), extraConnectedPieces);
 
                 if (extraConnectedPieces.Count >= 2)
                 {
