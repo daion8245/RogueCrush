@@ -1,42 +1,32 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Random = UnityEngine.Random;
 using UnityEngine.InputSystem;
+using Random = UnityEngine.Random;
 
 public class BoardSystem : MonoBehaviour
 {
-    #region Serialized Fields
+    [SerializeField] private int width = 6;
+    [SerializeField] private int height = 8;
 
-    //보드의 크기 설정
-    [SerializeField] private int width = 6; //보드의 가로 크기
-    [SerializeField] private int height = 8;//보드의 세로 크기
+    [SerializeField] private float spacingX;
+    [SerializeField] private float spacingY;
 
-    //노드간의 간격 설정
-    [SerializeField] private float spacingX; //노드간의 가로 간격
-    [SerializeField] private float spacingY; //노드간의 세로 간격
+    [SerializeField] private GameObject[] piecePrefabs;
+    [SerializeField] private Transform piecesRoot;
+    [SerializeField] private ArrayLayout arrayLayout;
 
-    //선택된 피스
-    [SerializeField] private Piece selectedPiece; //선택된 피스
+    [SerializeField] private Piece selectedPiece;
+    [SerializeField] private bool isProcessingMoving;
 
-    //시스템에서 피스를 움직이는 중인가?
-    [SerializeField] private bool isProcessingMoving; //피스가 움직이는 중인지 여부
+    [SerializeField] private List<Piece> piecesToRemove = new();
 
-    [SerializeField] private GameObject[] piecePrefabs; //피스 프리팹 배열
-
-    private GameObject _boardRoot; // 보드 부모 오브젝트
-
-    #endregion
-
-    private Node[,] _boardPieces; // 보드의 2차원 배열 이곳에 노드들이 들어간다.
-
-    public List<GameObject> piecesToDestroy = new(); // 제거할 피스들 리스트
-
-    public static BoardSystem Instance; // 싱글톤 인스턴스
-
-    [Header("Optional Parents")] public Transform piecesRoot; // 피스 부모 오브젝트
+    private Node[,] _boardPieces;
+    private readonly List<GameObject> _piecesToDestroy = new();
 
     private Camera _mainCam;
+
+    public static BoardSystem Instance;
 
     private void Awake()
     {
@@ -50,7 +40,6 @@ public class BoardSystem : MonoBehaviour
         }
     }
 
-
     private void Start()
     {
         _mainCam = Camera.main;
@@ -59,265 +48,199 @@ public class BoardSystem : MonoBehaviour
 
     private void Update()
     {
-        #region oldInput
-        /*
-        if (Input.GetMouseButtonDown(0))
-        {
-            
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
-            
-            if (hit.collider is not null && hit.collider.gameObject.GetComponent<Piece>())
-            {
-                if(isProcessingMoving)
-                    return;
-                
-                Piece piece = hit.collider.gameObject.GetComponent<Piece>();
-                Debug.Log($"{piece.gameObject} <= 해당 피스를 클릭했습니다.");
-            }
-            
-        }
-        */
-
-        #endregion
-        // 마우스가 없는 환경일 수도 있으니 한 번 체크
         if (Mouse.current == null)
             return;
 
-        // 왼쪽 마우스 버튼이 "이번 프레임에 눌렸을 때"만 처리
-        if (Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            // 1. 마우스 스크린 좌표 읽기
-            Vector2 mousePos = Mouse.current.position.ReadValue();
+        if (!Mouse.current.leftButton.wasPressedThisFrame)
+            return;
 
-            // 2. 스크린 좌표 → 월드 좌표 (2D 전용)
-            Vector3 worldPos = _mainCam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, 0f));
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+        Vector3 worldPos = _mainCam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, 0f));
+        Collider2D overlapPoint = Physics2D.OverlapPoint(worldPos);
 
-            // 3. 해당 지점을 덮는 2D 콜라이더 찾기
-            Collider2D overlapPoint = Physics2D.OverlapPoint(worldPos);
+        if (overlapPoint == null)
+            return;
 
-            // 4. 맞은 콜라이더가 있고, 거기에 Piece가 붙어 있는지 확인
-            if (overlapPoint is not null)
-            {
-                Piece piece = overlapPoint.gameObject.GetComponent<Piece>();
-                if (piece is not null)
-                {
-                    if (isProcessingMoving)
-                        return;
+        Piece piece = overlapPoint.gameObject.GetComponent<Piece>();
+        if (piece == null || isProcessingMoving)
+            return;
 
-                    SelectPiece(piece);
-                    Debug.Log($"{piece.gameObject} <= 해당 피스를 클릭했습니다.");
-                }
-            }
-        }
+        SelectPiece(piece);
     }
 
-    /// <summary>
-    /// 보드를 초기 생성하는 함수
-    /// </summary>
-    void InitializeBoard()
+    private void InitializeBoard()
     {
         DestroyPieces();
-        _boardPieces = new Node[width, height]; // 보드 노드 배열 초기화
+        _boardPieces = new Node[width, height];
 
-        spacingX = (float)(width - 1) / 2; // 가로 간격 설정
-        spacingY = (float)(height - 1) / 2; // 세로 간격 설정
+        spacingX = (float)(width - 1) / 2f;
+        spacingY = (float)(height - 1) / 2f;
 
-        // 피스 랜덤 생성 후 보드에 채우기
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
             {
-                Vector2 position = new Vector2(x - spacingX, y - spacingY); //피스의 위치 계산
+                Vector2 position = new(x - spacingX, y - spacingY);
 
-                int randomIndex = Random.Range(0, piecePrefabs.Length); //랜덤한 피스 프리팹 인덱스 선택
+                if (arrayLayout != null && arrayLayout.IsBlocked(x, y))
+                {
+                    _boardPieces[x, y] = new Node(false, null);
+                    continue;
+                }
 
-                // 피스 인스턴스 생성
-                Transform parentForPiece = piecesRoot != null ? piecesRoot :
-                                            (_boardRoot != null ? _boardRoot.transform : transform);
-                GameObject pieceGo = Instantiate(
-                    piecePrefabs[randomIndex],
-                    position,
-                    Quaternion.identity,
-                    parentForPiece
-                );// 피스 인스턴스 생성
+                int randomIndex = Random.Range(0, piecePrefabs.Length);
+                Transform parentForPiece = piecesRoot != null ? piecesRoot : transform;
+                GameObject pieceGo = Instantiate(piecePrefabs[randomIndex], position, Quaternion.identity, parentForPiece);
+                Piece pieceComp = pieceGo.GetComponent<Piece>();
+                if (pieceComp != null)
+                {
+                    pieceComp.SetIndices(x, y);
+                }
 
-                // 좌표 설정
-                var pComp = pieceGo.GetComponent<Piece>();
-                if (pComp != null) pComp.SetIndices(x, y); //피스의 좌표 설정
-
-                // 노드 생성 및 보드에 할당
-                GameObject nodeGo = new GameObject($"Node_{x}_{y}");
-                nodeGo.transform.SetParent(_boardRoot != null ? _boardRoot.transform : transform, false);
-                nodeGo.transform.localPosition = position;
-
-                Node node = nodeGo.AddComponent<Node>();
-                node.Initialize(x, y);
-                node.SetPiece(pieceGo);
-
-                _boardPieces[x, y] = node; //보드에 노드 할당
-
-                piecesToDestroy.Add(nodeGo); //제거할 피스 리스트에 추가
+                _boardPieces[x, y] = new Node(true, pieceGo);
+                _piecesToDestroy.Add(pieceGo);
             }
         }
 
-        CheckBoardToMatches(true);
+        if (CheckBoardToMatches(false))
+        {
+            InitializeBoard();
+        }
     }
 
     private void DestroyPieces()
     {
-        if (piecesToDestroy != null)
+        if (_piecesToDestroy.Count == 0)
+            return;
+
+        foreach (GameObject piece in _piecesToDestroy)
         {
-            foreach (GameObject piece in piecesToDestroy)
+            if (piece != null)
             {
                 Destroy(piece);
             }
-            piecesToDestroy.Clear();
         }
+
+        _piecesToDestroy.Clear();
     }
 
-    /// <summary>
-    /// 전반적으로 일치하는 피스가 있는지 확인하는 함수
-    /// 일치하는 피스가 있으면 true 반환
-    /// 그리고 일치하는 피스들은 isMatched 플래그를 true로 설정
-    /// Debug.Log로 매치 발생 상황 출력
-    /// </summary>
-    /// <returns></returns>
-    public bool CheckBoardToMatches(bool _takeAction)
+    public bool CheckBoardToMatches(bool takeAction)
     {
-        Debug.Log($"Checking board to match pos");
-        bool hasMatches = false;
+        if (_boardPieces == null)
+            return false;
 
+        bool hasMatched = false;
+
+        piecesToRemove.Clear();
         ResetMatchedFlags();
 
-        //제거할 피스들(매치된 피스들)을 저장할 리스트
-        List<Piece> piecesToRemove = new List<Piece>();
+        foreach (Node nodePiece in _boardPieces)
+        {
+            if (nodePiece != null && nodePiece.piece != null)
+            {
+                nodePiece.piece.GetComponent<Piece>().isMatched = false;
+            }
+        }
 
-        //보드의 모든 피스를 순회하며 매치 확인
-        //중복 제거를 피하기 위해 isMatched가 false인 피스만 검사
-        //매치된 피스들은 piecesToRemove 리스트에 추가하고 isMatched 플래그를 true로 설정
-        //매치가 발견되면 hasMatches를 true로 설정
-        //모든 보드를 돌기떄문에 최적화가 필요해보임
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                //사용 가능한 노드인지 확인
-                if (_boardPieces[x, y].isUsable)
+                if (!_boardPieces[x, y].isUsable || _boardPieces[x, y].piece == null)
+                    continue;
+
+                Piece piece = _boardPieces[x, y].piece.GetComponent<Piece>();
+                if (piece.isMatched)
+                    continue;
+
+                MatchResult matchedPieces = IsConnected(piece);
+                if (matchedPieces.connectedPieces.Count >= 3)
                 {
-                    //노드의 피스 가져오기
-                    Piece piece = _boardPieces[x, y].piece.GetComponent<Piece>();
+                    MatchResult superMatchedPieces = SuperMatch(matchedPieces);
 
-                    //피스가 아직 매치되지 않았는지 확인
-                    if (!piece.isMatched)
+                    piecesToRemove.AddRange(superMatchedPieces.connectedPieces);
+
+                    foreach (Piece pie in superMatchedPieces.connectedPieces)
                     {
-                        //피스가 다른 동일한 색상의 피스들과 연결되어 있는지 확인
-                        MatchResult matchPiece = IsConnected(piece);
-
-                        //3개 이상 매치되었는지 확인
-                        if (matchPiece.connectedPieces.Count >= 3)
-                        {
-                            MatchResult superMatchedPieces = SuperMatch(matchPiece);
-
-                            //매치된 피스들을 제거할 리스트에 추가하고 isMatched 플래그 설정
-                            piecesToRemove.AddRange(superMatchedPieces.connectedPieces);
-                            //매치된 피스들을 전부 isMatched로 플래그 설정
-                            foreach (Piece pieceToRemove in superMatchedPieces.connectedPieces)
-                            {
-                                pieceToRemove.isMatched = true;
-                            }
-
-                            //매치가 발견되었음을 표시
-                            hasMatches = true;
-                        }
+                        pie.isMatched = true;
                     }
+
+                    hasMatched = true;
                 }
             }
         }
 
-        if (_takeAction)
+        if (hasMatched && takeAction)
         {
-            RemoveAndRefiil(piecesToRemove);
+            StartCoroutine(ProcessMatchedBoard());
         }
-        //매치된 피스들 출력
-        return hasMatches;
+
+        return hasMatched;
     }
 
-    private void RemoveAndRefiil(List<Piece> _piecesToRemove)
+    private IEnumerator ProcessMatchedBoard()
     {
-        // piecesToRemove 위치에 있는 포션들을 지우기
-        foreach (Piece piece in _piecesToRemove)
+        foreach (Piece piece in piecesToRemove)
         {
-            // x와 y 인덱스를 얻어오고 저장
-            int _xIndex = piece.xIndex;
-            int _yIndex = piece.yIndex;
+            piece.isMatched = false;
+        }
 
-            // 포션 지우기
+        RemoveAndRefill(piecesToRemove);
+        yield return new WaitForSeconds(0.4f);
+
+        if (CheckBoardToMatches(false))
+        {
+            yield return StartCoroutine(ProcessMatchedBoard());
+        }
+    }
+
+    private void RemoveAndRefill(List<Piece> removeTargets)
+    {
+        foreach (Piece piece in removeTargets)
+        {
+            int xIndex = piece.xIndex;
+            int yIndex = piece.yIndex;
+
             Destroy(piece.gameObject);
 
-            // 포션을 지워서 포션 보드가 null이니까 포션 보드에 빈 노드 생성
-            _boardPieces[_xIndex, _yIndex] = new Node()
-            {
-                isUsable = true,
-                piece = null
-            };
+            _boardPieces[xIndex, yIndex] = new Node(true, null);
         }
 
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                if (_boardPieces[x, y].piece == null)
+                if (_boardPieces[x, y].piece == null && _boardPieces[x, y].isUsable)
                 {
-                    Debug.Log($"X:{x}, Y:{y} 위치가 비었습니다. 리필을 시도합니다");
-                    RefillPotion(x, y);
+                    RefillPiece(x, y);
                 }
             }
         }
     }
 
-    private void RefillPotion(int x, int y)
+    private void RefillPiece(int x, int y)
     {
-        // y 오프셋
         int yOffset = 1;
 
-        // 현재 셀 위에 있는 셀이 null 이고 보드 아래에 있는 경우
-        while (y + yOffset < height && _boardPieces[x,y + yOffset].piece == null)
+        while (y + yOffset < height && _boardPieces[x, y + yOffset].piece == null)
         {
-            // y 오프셋 증가
-            Debug.Log($"위에 있는 포션이 null 입니다. 하지만 저는 아직 보드의 맨 위에 있지 않습니다. " +
-                $"그렇기에 저는 yOffset을 더하고 다시 시도하려 합니다. 현재 오프셋 : {yOffset} , 1을 더합니다.");
             yOffset++;
         }
 
-        // 보더 맨위에 닿았거나 포션을 찾았을 경우
-
         if (y + yOffset < height && _boardPieces[x, y + yOffset].piece != null)
         {
-            // 포션을 찾았을떄
             Piece pieceAbove = _boardPieces[x, y + yOffset].piece.GetComponent<Piece>();
 
-            // 맞는 위치에 포션을 옮기기
-            Vector3 targetPos = new Vector3(x - spacingX, y - spacingY, pieceAbove.transform.position.z);
-            Debug.Log($"보드를 채우는동안 발견한 포션의 위치 : [{x},{y + yOffset}] 이 위치로 옮길게요 : [{x},{y}]");
-            // 위치로 옮기기
+            Vector3 targetPos = GetPiecePosition(x, y, pieceAbove.transform.position.z);
             pieceAbove.MoveToTarget(targetPos);
-            // 인덱스 업데이트
             pieceAbove.SetIndices(x, y);
-            // 포션보드 업데이트
+
             _boardPieces[x, y] = _boardPieces[x, y + yOffset];
-            // 물약이 나온 위치를 null 로 설정
-            _boardPieces[x, y + yOffset] = new Node()
-            {
-                isUsable = true,
-                piece = null
-            };
+            _boardPieces[x, y + yOffset] = new Node(true, null);
         }
 
-        // 맨 위에 닿았는데 포션을 못찾은 경우
         if (y + yOffset == height)
         {
-            Debug.Log("맨위로 갔지만 포션을 찾지 못했습니다");
             SpawnPieceAtTop(x);
         }
     }
@@ -331,55 +254,26 @@ public class BoardSystem : MonoBehaviour
         int locationToMoveTo = height - index;
 
         int randomIndex = Random.Range(0, piecePrefabs.Length);
-        Vector2 spawnPos = new Vector2(x - spacingX, height - spacingY);
+        Vector2 spawnPos = new(x - spacingX, height - spacingY);
 
-        Transform parentForPiece = piecesRoot != null ? piecesRoot :
-                                    (_boardRoot != null ? _boardRoot.transform : transform);
+        Transform parentForPiece = piecesRoot != null ? piecesRoot : transform;
+        GameObject newPiece = Instantiate(piecePrefabs[randomIndex], spawnPos, Quaternion.identity, parentForPiece);
+        Piece pieceComp = newPiece.GetComponent<Piece>();
+        pieceComp.SetIndices(x, index);
 
-        GameObject newPiece = Instantiate(
-            piecePrefabs[randomIndex],
-            spawnPos,
-            Quaternion.identity,
-            parentForPiece
-        );
+        _boardPieces[x, index] = new Node(true, newPiece);
+        _piecesToDestroy.Add(newPiece);
 
-        Piece newPieceComp = newPiece.GetComponent<Piece>();
-        if (newPieceComp != null)
-        {
-            newPieceComp.SetIndices(x, index);
-        }
-
-        if (_boardPieces[x, index] == null)
-        {
-            GameObject nodeGo = new GameObject($"Node_{x}_{index}");
-            nodeGo.transform.SetParent(_boardRoot != null ? _boardRoot.transform : transform, false);
-            nodeGo.transform.localPosition = new Vector2(x - spacingX, index - spacingY);
-
-            Node node = nodeGo.AddComponent<Node>();
-            node.Initialize(x, index);
-            _boardPieces[x, index] = node;
-
-            piecesToDestroy.Add(nodeGo);
-        }
-
-        _boardPieces[x, index].SetPiece(newPiece);
-
-        Vector3 targetPosition = new Vector3(
-            newPiece.transform.position.x,
-            newPiece.transform.position.y - locationToMoveTo,
-            newPiece.transform.position.z
-        );
-
-        newPieceComp?.MoveToTarget(targetPosition);
+        Vector3 targetPosition = new Vector3(newPiece.transform.position.x, newPiece.transform.position.y - locationToMoveTo, newPiece.transform.position.z);
+        pieceComp.MoveToTarget(targetPosition);
     }
 
     private int FindIndexOfLowestNull(int x)
     {
         int lowestNull = -1;
-
         for (int y = height - 1; y >= 0; y--)
         {
-            if (_boardPieces[x, y].piece == null)
+            if (_boardPieces[x, y].piece == null && _boardPieces[x, y].isUsable)
             {
                 lowestNull = y;
             }
@@ -388,35 +282,19 @@ public class BoardSystem : MonoBehaviour
         return lowestNull;
     }
 
-
-    #region 계단식 포션
-
-    // 지우고 채우기 ( 포션 리스트 )
-
-    // 포션 리필
-
-    // 맨위에 포션 생성
-
-    // findindexoflowestnull
-    #endregion
-
-    private MatchResult SuperMatch(MatchResult _matchedResults)
+    private MatchResult SuperMatch(MatchResult matchedResults)
     {
-        // 가로 매칭 or 긴 가로 매칭이 됐을때
-        if (_matchedResults.direction == MatchDirection.Horizontal || _matchedResults.direction == MatchDirection.LongHorizontal)
+        if (matchedResults.direction == MatchDirection.Horizontal || matchedResults.direction == MatchDirection.LongHorizontal)
         {
-            foreach(Piece pie in _matchedResults.connectedPieces)
+            foreach (Piece pie in matchedResults.connectedPieces)
             {
                 List<Piece> extraConnectedPieces = new();
-
                 CheckDirection(pie, new Vector2Int(0, 1), extraConnectedPieces);
-
                 CheckDirection(pie, new Vector2Int(0, -1), extraConnectedPieces);
 
                 if (extraConnectedPieces.Count >= 2)
                 {
-                    Debug.Log("긴 가로 매칭 성사");
-                    extraConnectedPieces.AddRange(_matchedResults.connectedPieces);
+                    extraConnectedPieces.AddRange(matchedResults.connectedPieces);
 
                     return new MatchResult
                     {
@@ -425,27 +303,24 @@ public class BoardSystem : MonoBehaviour
                     };
                 }
             }
+
             return new MatchResult
             {
-                connectedPieces = _matchedResults.connectedPieces,
-                direction = _matchedResults.direction
+                connectedPieces = matchedResults.connectedPieces,
+                direction = matchedResults.direction
             };
         }
-        // 세로 매칭 or 긴 세로 매칭이 됐을때
-        else if (_matchedResults.direction == MatchDirection.Vertical || _matchedResults.direction == MatchDirection.LongVertical)
+        else if (matchedResults.direction == MatchDirection.Vertical || matchedResults.direction == MatchDirection.LongVertical)
         {
-            foreach (Piece pie in _matchedResults.connectedPieces)
+            foreach (Piece pie in matchedResults.connectedPieces)
             {
                 List<Piece> extraConnectedPieces = new();
-
                 CheckDirection(pie, new Vector2Int(1, 0), extraConnectedPieces);
-
                 CheckDirection(pie, new Vector2Int(-1, 0), extraConnectedPieces);
 
                 if (extraConnectedPieces.Count >= 2)
                 {
-                    Debug.Log("긴 세로 매칭 성사");
-                    extraConnectedPieces.AddRange(_matchedResults.connectedPieces);
+                    extraConnectedPieces.AddRange(matchedResults.connectedPieces);
 
                     return new MatchResult
                     {
@@ -454,19 +329,17 @@ public class BoardSystem : MonoBehaviour
                     };
                 }
             }
+
             return new MatchResult
             {
-                connectedPieces = _matchedResults.connectedPieces,
-                direction = _matchedResults.direction
+                connectedPieces = matchedResults.connectedPieces,
+                direction = matchedResults.direction
             };
         }
-        return null;
+
+        return matchedResults;
     }
 
-    /// <summary>
-    /// 매치 탐색을 시작하기 전에 모든 피스의 매치 플래그를 초기화한다.
-    /// ProcessMatches 코루틴에서 hasMatched 값이 잘못 유지되는 문제 방지
-    /// </summary>
     private void ResetMatchedFlags()
     {
         if (_boardPieces == null)
@@ -489,116 +362,75 @@ public class BoardSystem : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 특정 피스가 다른 동일한 생삭의 피스들과 연결되있는지 확인하고
-    /// 연결된 피스들의 리스트와 매치 방향 정보를 반환하는 매서드
-    /// </summary>
-    /// <param name="piece"></param>
-    /// <returns></returns>
     private MatchResult IsConnected(Piece piece)
     {
-        //연결된 피스들을 저장할 리스트
-        //생성과 동시에 현제 피스 추가
         List<Piece> connectedPieces = new() { piece };
 
-        //오른쪽 방향 확인
-        CheckDirection(piece, new Vector2Int(1,0), connectedPieces);
-        //왼쪽 방향 확인
-        CheckDirection(piece, new Vector2Int(-1,0), connectedPieces);
-        // 3매치가 되었는지 확인
+        CheckDirection(piece, new Vector2Int(1, 0), connectedPieces);
+        CheckDirection(piece, new Vector2Int(-1, 0), connectedPieces);
         if (connectedPieces.Count == 3)
         {
-            Debug.Log($"가로 3매치 발생, 색깔 : {connectedPieces[0].pieceType}");
-
-            //연결된 피스들과 매치 방향 정보를 반환
-            return new MatchResult()
+            return new MatchResult
             {
                 connectedPieces = connectedPieces,
                 direction = MatchDirection.Horizontal
             };
         }
-        //3매치 이상인지 확인
         else if (connectedPieces.Count > 3)
         {
-            Debug.Log($"가로 3매치 이상 매치 발생, 색깔 : {connectedPieces[0].pieceType}");
-
-            //연결된 피스들과 매치 방향 정보를 반환
-            return new MatchResult()
+            return new MatchResult
             {
                 connectedPieces = connectedPieces,
                 direction = MatchDirection.LongHorizontal
             };
         }
-        //세로 매치 확인을 위해 리스트 초기화
+
         connectedPieces.Clear();
-        //현재 피스 추가
         connectedPieces.Add(piece);
-        
-        //위 방향 확인
-        CheckDirection(piece, new Vector2Int(0,1), connectedPieces);
-        //아래 방향 확인
-        CheckDirection(piece, new Vector2Int(0,-1), connectedPieces);
-        // 3매치가 되었는지 확인
+
+        CheckDirection(piece, new Vector2Int(0, 1), connectedPieces);
+        CheckDirection(piece, new Vector2Int(0, -1), connectedPieces);
         if (connectedPieces.Count == 3)
         {
-            Debug.Log($"세로 3매치 발생, 색깔 : {connectedPieces[0].pieceType}");
-
-            //연결된 피스들과 매치 방향 정보를 반환
-            return new MatchResult()
+            return new MatchResult
             {
                 connectedPieces = connectedPieces,
                 direction = MatchDirection.Vertical
             };
         }
-        //3매치 이상인지 확인
         else if (connectedPieces.Count > 3)
         {
-            Debug.Log($"세로 3매치 이상 매치 발생, 색깔 : {connectedPieces[0].pieceType}");
-
-            //연결된 피스들과 매치 방향 정보를 반환
-            return new MatchResult()
+            return new MatchResult
             {
                 connectedPieces = connectedPieces,
                 direction = MatchDirection.LongVertical
             };
         }
-        else
+
+        return new MatchResult
         {
-            //만약 매치된 피스가 없다면 빈 리스트와 None 반환
-            return new MatchResult()
-            {
-                connectedPieces = connectedPieces,
-                direction = MatchDirection.None
-            };
-        }
+            connectedPieces = connectedPieces,
+            direction = MatchDirection.None
+        };
     }
 
-    /// <summary>
-    /// 현재 보드에 일정 갯수 이상 겹치는 피스가 있는지 확인하는 함수
-    /// </summary>
     private void CheckDirection(Piece originPiece, Vector2Int direction, List<Piece> connectedPieces)
     {
-        //피스 타입과 시작 좌표 설정
         PieceType pieceType = originPiece.pieceType;
         int x = originPiece.xIndex + direction.x;
         int y = originPiece.yIndex + direction.y;
-        
-        //해당 방향으로 연결된 피스들을 확인
+
         while (x >= 0 && x < width && y >= 0 && y < height)
         {
-            //보드의 범위를 벗어나지 않는지 확인
-            if(!_boardPieces[x, y].isUsable) break;
-            
-            //이웃한 피스 가져오기
+            if (!_boardPieces[x, y].isUsable || _boardPieces[x, y].piece == null)
+                break;
+
             Piece neighborPiece = _boardPieces[x, y].piece.GetComponent<Piece>();
 
-            //이웃한 피스가 매치되지 않았고 동일한 타입인지 확인
             if (!neighborPiece.isMatched && neighborPiece.pieceType == pieceType)
             {
-                //연결된 피스 리스트에 추가
                 connectedPieces.Add(neighborPiece);
-                
-                //다음 위치로 이동
+
                 x += direction.x;
                 y += direction.y;
             }
@@ -606,22 +438,14 @@ public class BoardSystem : MonoBehaviour
         }
     }
 
-    #region pieceSwaping
-
-    /// <summary>
-    /// 이동시킬 피스를 선택하는 메서드
-    /// </summary>
-    /// <param name="piece"></param>
     public void SelectPiece(Piece piece)
     {
-        if (selectedPiece is null)
+        if (selectedPiece == null)
         {
-            Debug.Log($"{piece} 선택됨");
             selectedPiece = piece;
         }
         else if (selectedPiece == piece)
         {
-            Debug.Log($"{piece} 선택 해제됨");
             selectedPiece = null;
         }
         else if (selectedPiece != piece)
@@ -631,95 +455,59 @@ public class BoardSystem : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 피스를 스왑하는 메서드
-    /// </summary>
-    /// <param name="currentPiece">이동시킬 대상</param>
-    /// <param name="targetPiece">이동될 위치의 대상</param>
     private void SwapPieces(Piece currentPiece, Piece targetPiece)
     {
-        if (!IsAdjacent(currentPiece, targetPiece)) 
+        if (!IsAdjacent(currentPiece, targetPiece))
             return;
+
         DoSwap(currentPiece, targetPiece);
-        
+
         isProcessingMoving = true;
-        
+
         StartCoroutine(ProcessMatches(currentPiece, targetPiece));
     }
 
-    /// <summary>
-    /// 두 노드가 가진 피스를 서로 교환하고 좌표 정보를 동기화한다.
-    /// </summary>
-    /// <param name="currentPiece"></param>
-    /// <param name="targetPiece"></param>
     private void DoSwap(Piece currentPiece, Piece targetPiece)
     {
-        Node currentNode = _boardPieces[currentPiece.xIndex, currentPiece.yIndex];
-        Node targetNode = _boardPieces[targetPiece.xIndex, targetPiece.yIndex];
+        GameObject temp = _boardPieces[currentPiece.xIndex, currentPiece.yIndex].piece;
 
-        GameObject temp = currentNode.piece; // 현재 노드의 피스를 임시 저장
-        currentNode.SetPiece(targetNode.piece);
-        targetNode.SetPiece(temp);
+        _boardPieces[currentPiece.xIndex, currentPiece.yIndex].piece = _boardPieces[targetPiece.xIndex, targetPiece.yIndex].piece;
+        _boardPieces[targetPiece.xIndex, targetPiece.yIndex].piece = temp;
 
-        Piece pieceOnCurrentNode = currentNode.piece?.GetComponent<Piece>();
-        Piece pieceOnTargetNode = targetNode.piece ? targetNode.piece.GetComponent<Piece>() : null;
+        int tempXIndex = currentPiece.xIndex;
+        int tempYIndex = currentPiece.yIndex;
+        currentPiece.xIndex = targetPiece.xIndex;
+        currentPiece.yIndex = targetPiece.yIndex;
+        targetPiece.xIndex = tempXIndex;
+        targetPiece.yIndex = tempYIndex;
 
-        if (pieceOnCurrentNode)
-        {
-            pieceOnCurrentNode.MoveToTarget(currentNode.transform.position);
-        }
-
-        if (pieceOnTargetNode)
-        {
-            pieceOnTargetNode.MoveToTarget(targetNode.transform.position);
-        }
+        currentPiece.MoveToTarget(GetPiecePosition(currentPiece.xIndex, currentPiece.yIndex, currentPiece.transform.position.z));
+        targetPiece.MoveToTarget(GetPiecePosition(targetPiece.xIndex, targetPiece.yIndex, targetPiece.transform.position.z));
     }
 
-    // ReSharper disable Unity.PerformanceAnalysis
     private IEnumerator ProcessMatches(Piece currentPiece, Piece targetPiece)
     {
         yield return new WaitForSeconds(0.2f);
 
-        bool hasMatchOnCurrent = CheckBoardToMatches(true);
-        bool hasMatchOnTarget = CheckBoardToMatches(true);
-
-        Debug.Log($"현제 매치 상태 = {hasMatchOnCurrent || hasMatchOnTarget}");
-
-        if (!hasMatchOnCurrent && !hasMatchOnTarget)
+        if (CheckBoardToMatches(true))
+        {
+            yield return null;
+        }
+        else
         {
             DoSwap(currentPiece, targetPiece);
         }
 
         isProcessingMoving = false;
-        
-        //StartCoroutine(ProcessMatches(currentPiece, targetPiece));
-
     }
 
-    private bool HasMatchAt(Piece piece)
-    {
-        if (piece == null)
-        {
-            return false;
-        }
-
-        ResetMatchedFlags();
-        MatchResult matchResult = IsConnected(piece);
-
-        return matchResult.connectedPieces != null && matchResult.connectedPieces.Count >= 3;
-    }
-    
-    /// <summary>
-    /// 두 피스가 인접해있는지 확인하는 메서드
-    /// </summary>
-    /// <param name="currentPiece"></param>
-    /// <param name="targetPiece"></param>
-    /// <returns></returns>
     private bool IsAdjacent(Piece currentPiece, Piece targetPiece)
-    => Mathf.Abs(currentPiece.xIndex - targetPiece.xIndex)
-        + Mathf.Abs(currentPiece.yIndex - targetPiece.yIndex) == 1;
+    {
+        return Mathf.Abs(currentPiece.xIndex - targetPiece.xIndex) + Mathf.Abs(currentPiece.yIndex - targetPiece.yIndex) == 1;
+    }
 
-    #endregion
-    
-    
+    private Vector3 GetPiecePosition(int x, int y, float z = 0f)
+    {
+        return new Vector3(x - spacingX, y - spacingY, z);
+    }
 }
