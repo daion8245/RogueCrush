@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /* 구조 설명: 보드(Board) > 노드(Node) > 피스(Piece)
    - Piece는 구조적으로 Node 안에 있으며 피스의 여러 데이터들을 담고 있습니다.
@@ -19,6 +20,10 @@ public class Piece : MonoBehaviour
     public Vector2 targetPos; // 목표 위치
 
     public bool isMoving; // 피스가 이동 중인지 여부
+
+    //스트라이프(그 매칭하면 그 줄 다 없어지는거)
+    public bool horizontalStriped; // 가로 스트라이프 여부
+    public bool verticalStriped; // 세로 스트라이프 여부
 
     // 생성자
     public Piece(int x, int y)

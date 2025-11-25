@@ -6,14 +6,22 @@ using Random = UnityEngine.Random;
 
 public class BoardSystem : MonoBehaviour
 {
-    [SerializeField] private int width = 6;
-    [SerializeField] private int height = 8;
-
-    [SerializeField] private float spacingX;
-    [SerializeField] private float spacingY;
-
-    [SerializeField] private GameObject[] piecePrefabs;
-    [SerializeField] private Transform piecesRoot;
+    [Header("보드 크기 설정")]
+    [SerializeField, Tooltip("보드의 가로 크기")] private int width = 6;
+    [SerializeField, Tooltip("보드의 세로 크기")] private int height = 8;
+    
+    [Header("피스 간 간격 설정")]
+    [SerializeField, Tooltip("피스의 가로 간격")] private float spacingX;
+    [SerializeField, Tooltip("피스의 세로 간격")] private float spacingY;
+    
+    [Header("피스 프리팹 설정")]
+    [SerializeField, Tooltip("보드에 생성할 피스 프리팹(Prefab)")] private GameObject[] piecePrefabs;
+    
+    [Header("피스 부모 오브젝트 설정")]
+    [SerializeField, Tooltip("부모 오브젝트 설정(보통 스크립트 넣은 보드 게임 오브젝트 넣음)"
+         )] private Transform piecesRoot;
+    
+    [Header("보드 레이아웃 설정")]
     [SerializeField] private ArrayLayout arrayLayout;
 
     [SerializeField] private Piece selectedPiece;
