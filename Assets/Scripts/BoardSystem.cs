@@ -6,6 +6,8 @@ using Random = UnityEngine.Random;
 
 public class BoardSystem : MonoBehaviour
 {
+    #region SerializeField Variables
+    
     [Header("보드 크기 설정")]
     [SerializeField, Tooltip("보드의 가로 크기")] private int width = 6;
     [SerializeField, Tooltip("보드의 세로 크기")] private int height = 8;
@@ -22,36 +24,54 @@ public class BoardSystem : MonoBehaviour
          )] private Transform piecesRoot;
     
     [Header("보드 레이아웃 설정")]
-    [SerializeField] private ArrayLayout arrayLayout;
+    [SerializeField, Tooltip("어떤 칸이 막혀있어야 하는지 설정할수 있음.")] private ArrayLayout arrayLayout;
 
-    [SerializeField] private Piece selectedPiece;
-    [SerializeField] private bool isProcessingMoving;
+    [Header("내부 디버깅 표시 변수")]
+    [SerializeField,Tooltip("현제 선택된 피스")] private Piece selectedPiece;
+    [SerializeField,Tooltip("현제 피스가 이동하고 있는지 상태")] private bool isProcessingMoving;
+    [SerializeField, Tooltip("삭제되게 선택된 피스들")] private List<Piece> piecesToRemove = new();
+    
+    #endregion
 
-    [SerializeField] private List<Piece> piecesToRemove = new();
-
+    #region PrivateVariables
+    
+    /// <summary>
+    /// 보드의 피스들을 담는 2차원 배열
+    /// </summary>
     private Node[,] _boardPieces;
-    private readonly List<GameObject> _piecesToDestroy = new();
+    
+    /// <summary>
+    ///  삭제할 피스들을 담는 리스트
+    /// </summary>
+    [Tooltip("")]private readonly List<GameObject> _piecesToDestroy = new();
 
+    /// <summary>
+    /// 메인 카메라 참조
+    /// </summary>
     private Camera _mainCam;
+    
+    #endregion
 
-    public static BoardSystem Instance;
+    private static BoardSystem _instance; //싱글톤 인스턴스
 
     private void Awake()
     {
-        if (Instance == null)
+        //싱글톤 패턴 구현
+        if (_instance == null)
         {
-            Instance = this;
+            _instance = this;
         }
         else
         {
+            //이미 인스턴스가 존재하면 자신을 파괴
             Destroy(gameObject);
         }
     }
 
     private void Start()
     {
-        _mainCam = Camera.main;
-        InitializeBoard();
+        _mainCam = Camera.main;//메인 카메라 참조 초기화
+        InitializeBoard();//보드 초기화
     }
 
     private void Update()
@@ -75,60 +95,66 @@ public class BoardSystem : MonoBehaviour
 
         SelectPiece(piece);
     }
-
+    
     /// <summary>
-    /// ���� �ʱ�ȭ �ϴ� �Լ�
+    /// 보드 초기화(초기 생성)
     /// </summary>
     private void InitializeBoard()
     {
-        DestroyPieces();
-        _boardPieces = new Node[width, height];
+        DestroyPieces();//기존 피스들 삭제
+        _boardPieces = new Node[width, height]; //보드 피스 배열 초기화(설정된 가로,세로 크기로)
 
-        spacingX = (float)(width - 1) / 2f;
-        spacingY = (float)(height - 1) / 2f;
-
-        // x, y ��ǥ�� ���鼭 ���� �ʱ�ȭ
+        spacingX = (float)(width - 1) / 2f; //피스 간 가로 간격 설정
+        spacingY = (float)(height - 1) / 2f; //피스 간 세로 간격 설정
+        
+        //모든 보드 칸 순회 하면서 피스 생성 
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
             {
-                Vector2 position = new(x - spacingX, y - spacingY);
+                Vector2 position = new(x - spacingX, y - spacingY); //피스 생성 위치 계산
 
-                if (arrayLayout != null && arrayLayout.IsBlocked(x, y))
+                if (arrayLayout != null && arrayLayout.IsBlocked(x, y)) //해당 칸이 막혀있는지 확인`
                 {
-                    _boardPieces[x, y] = new Node(false, null);
-                    continue;
+                    _boardPieces[x, y] = new Node(false, null); //막혀있으면 사용 불가 노드로 설정
+                    continue; //다음 칸으로 이동
                 }
-
-                int randomIndex = Random.Range(0, piecePrefabs.Length);
-                Transform parentForPiece = piecesRoot != null ? piecesRoot : transform;
-                GameObject pieceGo = Instantiate(piecePrefabs[randomIndex], position, Quaternion.identity, parentForPiece);
-                Piece pieceComp = pieceGo.GetComponent<Piece>();
+                
+                //피스 생성
+                int randomIndex = Random.Range(0, piecePrefabs.Length); //피스 프리팹 중 랜덤 선택
+                Transform parentForPiece =
+                    piecesRoot != null ? piecesRoot : transform; //피스의 부모 오브젝트 설정
+                GameObject pieceGo = Instantiate(piecePrefabs[randomIndex],
+                    position, Quaternion.identity, parentForPiece);//피스 생성
+                Piece pieceComp = pieceGo.GetComponent<Piece>();//생성된 피스의 Piece 컴포넌트 참조
+                
+                //피스의 인덱스 설정
                 if (pieceComp != null)
                 {
-                    pieceComp.SetIndices(x, y);
+                    pieceComp.SetIndices(x, y); //피스의 x,y 인덱스 설정
                 }
 
-                _boardPieces[x, y] = new Node(true, pieceGo);
-                _piecesToDestroy.Add(pieceGo);
+                _boardPieces[x, y] = new Node(true, pieceGo); //보드 칸에 피스 할당
+                _piecesToDestroy.Add(pieceGo); //삭제할 피스 리스트에 추가
             }
         }
-
-        // ���� �ʱ�ȭ �� ��ġ�Ȱ� ������ �ٽ� �ʱ�ȭ
+        
         if (CheckBoardToMatches(false))
         {
             InitializeBoard();
         }
     }
-
+    
     /// <summary>
-    /// ���忡 �ִ� ���ǵ��� �����ϴ� �Լ�
+    /// 모든 피스들을 삭제하는 함수
     /// </summary>
     private void DestroyPieces()
     {
+        //삭제할 피스가 없으면 종료
         if (_piecesToDestroy.Count == 0)
             return;
 
+        //모든 피스 삭제
         foreach (GameObject piece in _piecesToDestroy)
         {
             if (piece != null)
@@ -137,61 +163,77 @@ public class BoardSystem : MonoBehaviour
             }
         }
 
+        //삭제할 피스 리스트 초기화
         _piecesToDestroy.Clear();
     }
-
+    
     /// <summary>
-    /// ���忡 ��ġ�Ȱ� �ִ��� Ȯ���ϴ� �Լ�
+    /// 보드에 매치된 피스들이 있는지 확인하는 함수
     /// </summary>
-    /// <param name="takeAction"></param>
+    /// <param name="takeAction">
+    /// 보드에 매치가 있는지 검사 / False,
+    /// 보드에 매치가 발견되면 실제 제거 및 리필처리 / True</param>
     /// <returns></returns>
     public bool CheckBoardToMatches(bool takeAction)
     {
+        //보드 피스 배열이 null이면 종료
         if (_boardPieces == null)
             return false;
+        
+        bool hasMatched = false; //매치된 피스가 있는지 여부
 
-        bool hasMatched = false;
+        piecesToRemove.Clear(); //제거할 피스 리스트 초기화
+        ResetMatchedFlags(); //모든 피스의 매치 플래그 초기화
 
-        piecesToRemove.Clear();
-        ResetMatchedFlags();
-
+        //모든 피스 순회하면서 매치 검사
+        //매치된 플래그 초기화
         foreach (Node nodePiece in _boardPieces)
         {
+            //노드가 null이 아니고 피스가 존재하면 매치 플래그 초기화
+            //이전에 매치된 피스가 있을수도 있으니 초기화
             if (nodePiece != null && nodePiece.piece != null)
             {
                 nodePiece.piece.GetComponent<Piece>().isMatched = false;
             }
         }
-        // x, y ��ǥ�� ���鼭 ��ġ�Ȱ� �ִ��� Ȯ��
+        //2중 for문으로 보드 전체 순회
+        //보드의 모든 피스를 검사해서 매치된 피스들을 찾는 for문
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
+                //노드가 사용 불가이거나 피스가 없으면 다음 칸으로
                 if (!_boardPieces[x, y].isUsable || _boardPieces[x, y].piece == null)
                     continue;
 
+                //피스 컴포넌트 참조
                 Piece piece = _boardPieces[x, y].piece.GetComponent<Piece>();
+                
+                //이미 매치된 피스면 다음 칸으로
                 if (piece.isMatched)
                     continue;
 
-                MatchResult matchedPieces = IsConnected(piece);
+                MatchResult matchedPieces = IsConnected(piece); //피스가 매치되었는지 검사
+                //매치된 피스가 3개 이상이면 매칭 처리
                 if (matchedPieces.connectedPieces.Count >= 3)
                 {
-                    MatchResult superMatchedPieces = SuperMatch(matchedPieces);
+                    MatchResult superMatchedPieces = SuperMatch(matchedPieces); //슈퍼 매치 검사
 
-                    piecesToRemove.AddRange(superMatchedPieces.connectedPieces);
-
-                    foreach (Piece pie in superMatchedPieces.connectedPieces)
+                    piecesToRemove.AddRange(superMatchedPieces.connectedPieces); //제거할 피스 리스트에 추가
+                    
+                    // 매치 플래그 설정
+                    foreach (Piece pie in superMatchedPieces.connectedPieces) 
                     {
                         pie.isMatched = true;
                     }
 
+                    //매치된 피스가 있으므로 플래그 설정
                     hasMatched = true;
                 }
             }
         }
-
-        // ��ġ�Ȱ� ������ ó��
+        
+        //매치된 피스가 있고 실제 제거 및 리필 처리를 원하면 코루틴 시작
         if (hasMatched && takeAction)
         {
             StartCoroutine(ProcessMatchedBoard());
@@ -200,13 +242,19 @@ public class BoardSystem : MonoBehaviour
         return hasMatched;
     }
 
+    /// <summary>
+    /// 매치된 보드,피스를 처리하는 코루틴
+    /// </summary>
+    /// <returns></returns>
     private IEnumerator ProcessMatchedBoard()
     {
+        //매치된 피스들의 매치 플래그 초기화
         foreach (Piece piece in piecesToRemove)
         {
             piece.isMatched = false;
         }
 
+        //매치된 피스 제거 및 리필 처리
         RemoveAndRefill(piecesToRemove);
         yield return new WaitForSeconds(0.4f);
 
@@ -215,11 +263,7 @@ public class BoardSystem : MonoBehaviour
             yield return StartCoroutine(ProcessMatchedBoard());
         }
     }
-
-    /// <summary>
-    /// ������ �­��� �Ÿ� ������
-    /// </summary>
-    /// <param name="removeTargets">���� ������Ÿ� �����޴� ����</param>
+    
     private void RemoveAndRefill(List<Piece> removeTargets)
     {
         foreach (Piece piece in removeTargets)
@@ -247,14 +291,12 @@ public class BoardSystem : MonoBehaviour
     private void RefillPiece(int x, int y)
     {
         int yOffset = 1;
-
-        // y�� �ø��鼭 õ����� ������ ã��
+        
         while (y + yOffset < height && _boardPieces[x, y + yOffset].piece == null)
         {
             yOffset++;
         }
-
-        // õ����� ������ ������ ã������
+        
         if (y + yOffset < height && _boardPieces[x, y + yOffset].piece != null)
         {
             Piece pieceAbove = _boardPieces[x, y + yOffset].piece.GetComponent<Piece>();
@@ -266,18 +308,13 @@ public class BoardSystem : MonoBehaviour
             _boardPieces[x, y] = _boardPieces[x, y + yOffset];
             _boardPieces[x, y + yOffset] = new Node(true, null);
         }
-
-        // ������ ã�� ��������
+        
         if (y + yOffset == height)
         {
             SpawnPieceAtTop(x);
         }
     }
-
-    /// <summary>
-    /// ������ ������ ��ġ�ϴ� �Լ�
-    /// </summary>
-    /// <param name="x"></param>
+    
     private void SpawnPieceAtTop(int x)
     {
         int index = FindIndexOfLowestNull(x);
@@ -314,15 +351,9 @@ public class BoardSystem : MonoBehaviour
 
         return lowestNull;
     }
-
-    /// <summary>
-    /// 3�� �̻� ��ġ
-    /// </summary>
-    /// <param name="matchedResults"></param>
-    /// <returns></returns>
+    
     private MatchResult SuperMatch(MatchResult matchedResults)
     {
-        // �� �Ʒ��� Ȯ��
         if (matchedResults.direction == MatchDirection.Horizontal || matchedResults.direction == MatchDirection.LongHorizontal)
         {
             foreach (Piece pie in matchedResults.connectedPieces)
@@ -349,7 +380,6 @@ public class BoardSystem : MonoBehaviour
                 direction = matchedResults.direction
             };
         }
-        // �� ���� Ȯ��
         else if (matchedResults.direction == MatchDirection.Vertical || matchedResults.direction == MatchDirection.LongVertical)
         {
             foreach (Piece pie in matchedResults.connectedPieces)
