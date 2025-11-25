@@ -76,6 +76,9 @@ public class BoardSystem : MonoBehaviour
         SelectPiece(piece);
     }
 
+    /// <summary>
+    /// º¸µå ÃÊ±âÈ­ ÇÏ´Â ÇÔ¼ö
+    /// </summary>
     private void InitializeBoard()
     {
         DestroyPieces();
@@ -84,6 +87,7 @@ public class BoardSystem : MonoBehaviour
         spacingX = (float)(width - 1) / 2f;
         spacingY = (float)(height - 1) / 2f;
 
+        // x, y ÁÂÇ¥¸¦ µ¹¸é¼­ º¸µå ÃÊ±âÈ­
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
@@ -110,12 +114,16 @@ public class BoardSystem : MonoBehaviour
             }
         }
 
+        // º¸µå ÃÊ±âÈ­ ÈÄ ¸ÅÄ¡µÈ°Ô ÀÖÀ¸¸é ´Ù½Ã ÃÊ±âÈ­
         if (CheckBoardToMatches(false))
         {
             InitializeBoard();
         }
     }
 
+    /// <summary>
+    /// º¸µå¿¡ ÀÖ´Â Æ÷¼ÇµéÀ» »èÁ¦ÇÏ´Â ÇÔ¼ö
+    /// </summary>
     private void DestroyPieces()
     {
         if (_piecesToDestroy.Count == 0)
@@ -132,6 +140,11 @@ public class BoardSystem : MonoBehaviour
         _piecesToDestroy.Clear();
     }
 
+    /// <summary>
+    /// º¸µå¿¡ ¸ÅÄ¡µÈ°Ô ÀÖ´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö
+    /// </summary>
+    /// <param name="takeAction"></param>
+    /// <returns></returns>
     public bool CheckBoardToMatches(bool takeAction)
     {
         if (_boardPieces == null)
@@ -149,7 +162,7 @@ public class BoardSystem : MonoBehaviour
                 nodePiece.piece.GetComponent<Piece>().isMatched = false;
             }
         }
-
+        // x, y ÁÂÇ¥¸¦ µ¹¸é¼­ ¸ÅÄ¡µÈ°Ô ÀÖ´ÂÁö È®ÀÎ
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
@@ -178,6 +191,7 @@ public class BoardSystem : MonoBehaviour
             }
         }
 
+        // ¸ÅÄ¡µÈ°Ô ÀÖÀ¸¸é Ã³¸®
         if (hasMatched && takeAction)
         {
             StartCoroutine(ProcessMatchedBoard());
@@ -202,6 +216,10 @@ public class BoardSystem : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Æ÷¼ÇÀ» ¸Â­Ÿ´ø °Å¸¦ »èÁ¦ÇÔ
+    /// </summary>
+    /// <param name="removeTargets">Æ÷¼Ç ¸ÂÃè´ø°Å¸¦ º¸°üÇÞ´ø º¯¼ö</param>
     private void RemoveAndRefill(List<Piece> removeTargets)
     {
         foreach (Piece piece in removeTargets)
@@ -230,11 +248,13 @@ public class BoardSystem : MonoBehaviour
     {
         int yOffset = 1;
 
+        // y¸¦ ¿Ã¸®¸é¼­ ÃµÀå±îÁö Æ÷¼ÇÀ» Ã£À½
         while (y + yOffset < height && _boardPieces[x, y + yOffset].piece == null)
         {
             yOffset++;
         }
 
+        // ÃµÀå±îÁö °¬À»‹š Æ÷¼ÇÀ» Ã£¾ÒÀ¸¸é
         if (y + yOffset < height && _boardPieces[x, y + yOffset].piece != null)
         {
             Piece pieceAbove = _boardPieces[x, y + yOffset].piece.GetComponent<Piece>();
@@ -247,12 +267,17 @@ public class BoardSystem : MonoBehaviour
             _boardPieces[x, y + yOffset] = new Node(true, null);
         }
 
+        // Æ÷¼ÇÀ» Ã£Áö ¸øÇÞÀ¸¸é
         if (y + yOffset == height)
         {
             SpawnPieceAtTop(x);
         }
     }
 
+    /// <summary>
+    /// ¸ÇÀ§¿¡ Æ÷¼ÇÀ» ¼³Ä¡ÇÏ´Â ÇÔ¼ö
+    /// </summary>
+    /// <param name="x"></param>
     private void SpawnPieceAtTop(int x)
     {
         int index = FindIndexOfLowestNull(x);
@@ -290,8 +315,14 @@ public class BoardSystem : MonoBehaviour
         return lowestNull;
     }
 
+    /// <summary>
+    /// 3ÁÙ ÀÌ»ó ¸ÅÄ¡
+    /// </summary>
+    /// <param name="matchedResults"></param>
+    /// <returns></returns>
     private MatchResult SuperMatch(MatchResult matchedResults)
     {
+        // À§ ¾Æ·¡¸¦ È®ÀÎ
         if (matchedResults.direction == MatchDirection.Horizontal || matchedResults.direction == MatchDirection.LongHorizontal)
         {
             foreach (Piece pie in matchedResults.connectedPieces)
@@ -318,6 +349,7 @@ public class BoardSystem : MonoBehaviour
                 direction = matchedResults.direction
             };
         }
+        // ¾ç ¿·À» È®ÀÎ
         else if (matchedResults.direction == MatchDirection.Vertical || matchedResults.direction == MatchDirection.LongVertical)
         {
             foreach (Piece pie in matchedResults.connectedPieces)
