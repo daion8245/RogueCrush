@@ -376,7 +376,7 @@ public class BoardSystem : MonoBehaviour
 
                         if (_boardPieces[x, y].piece == null && _boardPieces[x, y].isUsable)
                         {
-                            Vector2 spawnPos = new(x - spacingX, height - spacingY); //피스 생성 위치 계산
+                            Vector2 spawnPos = GetSpawnPosition(x, y); //피스 생성 위치 계산
 
                             Transform parentForPiece =
                                 piecesRoot != null ? piecesRoot : transform; //피스의 부모 오브젝트 설정
@@ -388,6 +388,7 @@ public class BoardSystem : MonoBehaviour
                             if (pieceComp != null)
                             {
                                 pieceComp.SetIndices(x, y); //피스의 x,y 인덱스 설정
+                                pieceComp.MoveToTarget(GetPiecePosition(x, y, pieceGo.transform.position.z));
                             }
 
                             _boardPieces[x, y] = new Node(true, pieceGo); //보드 칸에 피스 할당
@@ -455,10 +456,8 @@ public class BoardSystem : MonoBehaviour
         if (index < 0)
             return;
 
-        int locationToMoveTo = height - index; //이동할 위치 계산
-
         int randomIndex = Random.Range(0, piecePrefabs.Length); //랜덤 피스 프리팹 선택
-        Vector2 spawnPos = new(x - spacingX, height - spacingY); //피스 생성 위치 계산
+        Vector2 spawnPos = GetSpawnPosition(x, index); //피스 생성 위치 계산
 
         Transform parentForPiece = piecesRoot != null ? piecesRoot : transform; //피스 부모 오브젝트 설정
         GameObject newPiece = Instantiate(piecePrefabs[randomIndex], spawnPos, Quaternion.identity, parentForPiece); //새 피스 생성
@@ -468,9 +467,7 @@ public class BoardSystem : MonoBehaviour
         _boardPieces[x, index] = new Node(true, newPiece); //보드 칸 배열에 새 피스 할당
         _piecesToDestroy.Add(newPiece); //삭제할 피스 리스트에 추가
 
-        Vector3 targetPosition
-            = new Vector3(newPiece.transform.position.x, newPiece.transform.position.y - locationToMoveTo,
-                newPiece.transform.position.z); //이동할 위치 계산
+        Vector3 targetPosition = GetPiecePosition(x, index, newPiece.transform.position.z); //이동할 위치 계산
         pieceComp.MoveToTarget(targetPosition); //피스 이동
     }
 
@@ -809,5 +806,19 @@ public class BoardSystem : MonoBehaviour
     private Vector3 GetPiecePosition(int x, int y, float z = 0f)
     {
         return new Vector3(x - spacingX, y - spacingY, z);
+    }
+
+    /// <summary>
+    /// 새로운 피스를 스폰할 월드 위치 계산
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="targetY"></param>
+    /// <returns></returns>
+    private Vector2 GetSpawnPosition(int x, int targetY)
+    {
+        float spawnOffset = height - targetY;
+        float spawnY = (height - 1) - spacingY + spawnOffset;
+
+        return new Vector2(x - spacingX, spawnY);
     }
 }
