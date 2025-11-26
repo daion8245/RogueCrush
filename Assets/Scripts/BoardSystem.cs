@@ -104,9 +104,9 @@ public class BoardSystem : MonoBehaviour
     private Camera _mainCam;
     
     /// <summary>
-    /// 생성 대기 피스 딕셔너리
+    /// 생성 대기 피스 정보 리스트
     /// </summary>
-    private List<Piece> _spawnWaitingPieces = new();
+    private readonly List<SpawnWaitingPieceInfo> _spawnWaitingPieces = new();
     
     #endregion
     
@@ -286,14 +286,10 @@ public class BoardSystem : MonoBehaviour
                     switch (superMatchedPieces)
                     {
                         case { direction: MatchDirection.LongHorizontal }:
-                            Piece horizontalStripedPice = GameObject.Instantiate(piece);
-                            horizontalStripedPice.horizontalStriped = true;
-                            _spawnWaitingPieces.Add(horizontalStripedPice);
+                            _spawnWaitingPieces.Add(CreateWaitingPieceInfo(piece, true, false));
                             break;
                         case { direction: MatchDirection.LongVertical }:
-                            Piece verticaltripedPice = GameObject.Instantiate(piece);
-                            verticaltripedPice.verticalStriped = true;
-                            _spawnWaitingPieces.Add(verticaltripedPice);
+                            _spawnWaitingPieces.Add(CreateWaitingPieceInfo(piece, false, true));
                             break;
                     }
                     
@@ -365,8 +361,8 @@ public class BoardSystem : MonoBehaviour
                 //대기중인 스폰 피스가 있으면 우선 생성
                 for (int i = _spawnWaitingPieces.Count - 1; i >= 0; i--)
                 {
-                    var spongePiece = _spawnWaitingPieces[i];
-                    if (spongePiece.xIndex == x && spongePiece.yIndex == y)
+                    SpawnWaitingPieceInfo waitingPiece = _spawnWaitingPieces[i];
+                    if (waitingPiece.xIndex == x && waitingPiece.yIndex == y)
                     {
                         if (_boardPieces[x, y].piece != null)
                         {
@@ -374,13 +370,13 @@ public class BoardSystem : MonoBehaviour
                             _boardPieces[x, y] = new Node(true, null);
                         }
 
-                        if (_boardPieces[x, y].piece == null && _boardPieces[x, y].isUsable)
+                        if (_boardPieces[x, y].piece == null && _boardPieces[x, y].isUsable && waitingPiece.prefab != null)
                         {
                             Vector2 spawnPos = GetSpawnPosition(x, y); //피스 생성 위치 계산
 
                             Transform parentForPiece =
                                 piecesRoot != null ? piecesRoot : transform; //피스의 부모 오브젝트 설정
-                            GameObject pieceGo = Instantiate(spongePiece.gameObject,
+                            GameObject pieceGo = Instantiate(waitingPiece.prefab,
                                 spawnPos, Quaternion.identity, parentForPiece);//피스 생성
                             Piece pieceComp = pieceGo.GetComponent<Piece>();//생성된 피스의 Piece 컴포넌트 참조
 
@@ -388,6 +384,8 @@ public class BoardSystem : MonoBehaviour
                             if (pieceComp != null)
                             {
                                 pieceComp.SetIndices(x, y); //피스의 x,y 인덱스 설정
+                                pieceComp.horizontalStriped = waitingPiece.horizontalStriped;
+                                pieceComp.verticalStriped = waitingPiece.verticalStriped;
                                 pieceComp.MoveToTarget(GetPiecePosition(x, y, pieceGo.transform.position.z));
                             }
 
@@ -820,5 +818,37 @@ public class BoardSystem : MonoBehaviour
         float spawnY = (height - 1) - spacingY + spawnOffset;
 
         return new Vector2(x - spacingX, spawnY);
+    }
+
+    private SpawnWaitingPieceInfo CreateWaitingPieceInfo(Piece sourcePiece, bool horizontalStriped, bool verticalStriped)
+    {
+        return new SpawnWaitingPieceInfo
+        {
+            prefab = GetPrefabForType(sourcePiece.pieceType),
+            xIndex = sourcePiece.xIndex,
+            yIndex = sourcePiece.yIndex,
+            horizontalStriped = horizontalStriped,
+            verticalStriped = verticalStriped
+        };
+    }
+
+    private GameObject GetPrefabForType(PieceType pieceType)
+    {
+        int index = (int)pieceType;
+        if (index >= 0 && index < piecePrefabs.Length)
+        {
+            return piecePrefabs[index];
+        }
+
+        return piecePrefabs.Length > 0 ? piecePrefabs[0] : null;
+    }
+
+    private struct SpawnWaitingPieceInfo
+    {
+        public GameObject prefab;
+        public int xIndex;
+        public int yIndex;
+        public bool horizontalStriped;
+        public bool verticalStriped;
     }
 }
