@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 /* 구조 설명: 보드(Board) > 노드(Node) > 피스(Piece)
    - Piece는 구조적으로 Node 안에 있으며 피스의 여러 데이터들을 담고 있습니다.
@@ -22,6 +24,9 @@ public class Piece : MonoBehaviour
     public bool isMoving; // 피스가 이동 중인지 여부
 
     //스트라이프(그 매칭하면 그 줄 다 없어지는거)
+    [SerializeField] private GameObject horizontalStripedImage;
+    [SerializeField] private GameObject verticalStripedImage;
+    
     public bool horizontalStriped; // 가로 스트라이프 여부
     public bool verticalStriped; // 세로 스트라이프 여부
 
@@ -64,6 +69,29 @@ public class Piece : MonoBehaviour
 
         transform.position = target;
         isMoving = false;
+    }
+
+    private void Update()
+    {
+        // 가로 스트라이프 이미지 활성화/비활성화 관리
+        if (horizontalStriped && !horizontalStripedImage.activeSelf)
+        {
+            horizontalStripedImage.gameObject.SetActive(true);
+        }
+        else if (!horizontalStriped && horizontalStripedImage.activeSelf)
+        {
+            horizontalStripedImage.gameObject.SetActive(false);
+        }
+
+        // 세로 스트라이프 이미지 활성화/비활성화 관리
+        if (verticalStriped && !verticalStripedImage.activeSelf)
+        {
+            verticalStripedImage.gameObject.SetActive(true);
+        }
+        else if (!verticalStriped && verticalStripedImage.activeSelf)
+        {
+            verticalStripedImage.gameObject.SetActive(false);
+        }
     }
 }
 
