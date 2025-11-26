@@ -362,27 +362,38 @@ public class BoardSystem : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
-                foreach (var spongePiece in _spawnWaitingPieces)
+                for (int i = _spawnWaitingPieces.Count - 1; i >= 0; i--)
                 {
+                    var spongePiece = _spawnWaitingPieces[i];
                     if (spongePiece.xIndex == x && spongePiece.yIndex == y)
                     {
-                        Vector2 spawnPos = new(x - spacingX, height - spacingY); //피스 생성 위치 계산
-
-                        Transform parentForPiece =
-                            piecesRoot != null ? piecesRoot : transform; //피스의 부모 오브젝트 설정
-                        GameObject pieceGo = Instantiate(spongePiece.gameObject,
-                            spawnPos, Quaternion.identity, parentForPiece);//피스 생성
-                        Piece pieceComp = pieceGo.GetComponent<Piece>();//생성된 피스의 Piece 컴포넌트 참조
-
-                        //피스의 인덱스 설정
-                        if (pieceComp != null)
+                        if (_boardPieces[x, y].piece != null)
                         {
-                            pieceComp.SetIndices(x, y); //피스의 x,y 인덱스 설정
+                            Destroy(_boardPieces[x, y].piece);
+                            _boardPieces[x, y] = new Node(true, null);
                         }
 
-                        _boardPieces[x, y] = new Node(true, pieceGo); //보드 칸에 피스 할당
-                        _piecesToDestroy.Add(pieceGo); //삭제할 피스 리스트에 추가
-                        _spawnWaitingPieces.Remove(spongePiece);
+                        if (_boardPieces[x, y].piece == null && _boardPieces[x, y].isUsable)
+                        {
+                            Vector2 spawnPos = new(x - spacingX, height - spacingY); //피스 생성 위치 계산
+
+                            Transform parentForPiece =
+                                piecesRoot != null ? piecesRoot : transform; //피스의 부모 오브젝트 설정
+                            GameObject pieceGo = Instantiate(spongePiece.gameObject,
+                                spawnPos, Quaternion.identity, parentForPiece);//피스 생성
+                            Piece pieceComp = pieceGo.GetComponent<Piece>();//생성된 피스의 Piece 컴포넌트 참조
+
+                            //피스의 인덱스 설정
+                            if (pieceComp != null)
+                            {
+                                pieceComp.SetIndices(x, y); //피스의 x,y 인덱스 설정
+                            }
+
+                            _boardPieces[x, y] = new Node(true, pieceGo); //보드 칸에 피스 할당
+                            _piecesToDestroy.Add(pieceGo); //삭제할 피스 리스트에 추가
+                        }
+
+                        _spawnWaitingPieces.RemoveAt(i);
                         break;
                     }
                 }
