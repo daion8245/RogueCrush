@@ -107,6 +107,7 @@ public class BoardSystem : MonoBehaviour
     /// 생성 대기 피스 딕셔너리
     /// </summary>
     private List<Piece> _spawnWaitingPieces = new();
+
     
     #endregion
     
@@ -128,6 +129,7 @@ public class BoardSystem : MonoBehaviour
 
     private void Start()
     {
+        _spawnWaitingPieces.Clear();
         _mainCam = Camera.main;//메인 카메라 참조 초기화
         InitializeBoard();//보드 초기화
     }
@@ -282,7 +284,7 @@ public class BoardSystem : MonoBehaviour
                     MatchResult superMatchedPieces = SuperMatch(matchedPieces); //슈퍼 매치 검사
 
                     piecesToRemove.AddRange(superMatchedPieces.connectedPieces); //제거할 피스 리스트에 추가
-
+                    
                     switch (superMatchedPieces)
                     {
                         case { direction: MatchDirection.LongHorizontal }:
