@@ -362,6 +362,7 @@ public class BoardSystem : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
+                //대기중인 스폰 피스가 있으면 우선 생성
                 for (int i = _spawnWaitingPieces.Count - 1; i >= 0; i--)
                 {
                     var spongePiece = _spawnWaitingPieces[i];
