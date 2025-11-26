@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
@@ -101,6 +102,11 @@ public class BoardSystem : MonoBehaviour
     /// 메인 카메라 참조
     /// </summary>
     private Camera _mainCam;
+    
+    /// <summary>
+    /// 생성 대기 피스 딕셔너리
+    /// </summary>
+    private List<Piece> _spawnWaitingPieces = new();
     
     #endregion
     
@@ -276,6 +282,20 @@ public class BoardSystem : MonoBehaviour
                     MatchResult superMatchedPieces = SuperMatch(matchedPieces); //슈퍼 매치 검사
 
                     piecesToRemove.AddRange(superMatchedPieces.connectedPieces); //제거할 피스 리스트에 추가
+
+                    switch (superMatchedPieces)
+                    {
+                        case { direction: MatchDirection.LongHorizontal }:
+                            Piece horizontalStripedPice = GameObject.Instantiate(piece);
+                            horizontalStripedPice.horizontalStriped = true;
+                            _spawnWaitingPieces.Add(horizontalStripedPice);
+                            break;
+                        case { direction: MatchDirection.LongVertical }:
+                            Piece verticaltripedPice = GameObject.Instantiate(piece);
+                            verticaltripedPice.verticalStriped = true;
+                            _spawnWaitingPieces.Add(verticaltripedPice);
+                            break;
+                    }
                     
                     // 매치 플래그 설정
                     foreach (Piece pie in superMatchedPieces.connectedPieces) 
@@ -342,6 +362,30 @@ public class BoardSystem : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
+                foreach (var spongePiece in _spawnWaitingPieces)
+                {
+                    if (spongePiece.xIndex == x && spongePiece.yIndex == y)
+                    {
+                        Vector2 spawnPos = new(x - spacingX, height - spacingY); //피스 생성 위치 계산
+
+                        Transform parentForPiece =
+                            piecesRoot != null ? piecesRoot : transform; //피스의 부모 오브젝트 설정
+                        GameObject pieceGo = Instantiate(spongePiece.gameObject,
+                            spawnPos, Quaternion.identity, parentForPiece);//피스 생성
+                        Piece pieceComp = pieceGo.GetComponent<Piece>();//생성된 피스의 Piece 컴포넌트 참조
+
+                        //피스의 인덱스 설정
+                        if (pieceComp != null)
+                        {
+                            pieceComp.SetIndices(x, y); //피스의 x,y 인덱스 설정
+                        }
+
+                        _boardPieces[x, y] = new Node(true, pieceGo); //보드 칸에 피스 할당
+                        _piecesToDestroy.Add(pieceGo); //삭제할 피스 리스트에 추가
+                        _spawnWaitingPieces.Remove(spongePiece);
+                        break;
+                    }
+                }
                 //빈 칸이면 리필 처리
                 if (_boardPieces[x, y].piece == null && _boardPieces[x, y].isUsable)
                 {
