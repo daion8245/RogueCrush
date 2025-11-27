@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="93b2bdf8-8099-42fb-943b-7d0795f13de6" name="변경" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.RogueCrush/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.RogueCrush/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/UI.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/UI.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/BoardSystem.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/BoardSystem.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -41,6 +42,7 @@
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/MatchResult.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/3209c419f8514dc7af6f7bbce69cabc61f7200/02/b8dec9cd/Object.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/3209c419f8514dc7af6f7bbce69cabc61f7200/68/f5a789a9/MonoBehaviour.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/5a41d6b7189842eca409fd0b1c3e3dcf17bf78/1c/39f44ed5/Int32.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/bed9669261d44da0a59448ecde2b1a5c46ae00/e3/4974c9ba/ExceptionDispatchInfo.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
@@ -157,6 +159,8 @@
       <workItem from="1764131033106" duration="3498000" />
       <workItem from="1764139226437" duration="7640000" />
       <workItem from="1764152784190" duration="6668000" />
+      <workItem from="1764205269973" duration="2734000" />
+      <workItem from="1764215810010" duration="1346000" />
     </task>
     <task id="LOCAL-00001" summary="대충 설명">
       <option name="closed" value="true" />
