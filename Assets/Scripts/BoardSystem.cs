@@ -70,7 +70,7 @@ public class BoardSystem : MonoBehaviour
     [SerializeField, Tooltip("피스의 세로 간격")] private float spacingY;
     
     [Header("피스 프리팹 설정")]
-    [SerializeField, Tooltip("보드에 생성할 피스 프리팹(Prefab)")] private GameObject[] piecePrefabs;
+    [SerializeField, Tooltip("보드에 생성할 피스 프리팹(Prefab)")] private GameObject[]piecePrefabs;
     
     [Header("피스 부모 오브젝트 설정")]
     [SerializeField, Tooltip("부모 오브젝트 설정(보통 스크립트 넣은 보드 게임 오브젝트 넣음)"
@@ -200,6 +200,7 @@ public class BoardSystem : MonoBehaviour
 
                 _boardPieces[x, y] = new Node(true, pieceGo); //보드 칸에 피스 할당
                 _piecesToDestroy.Add(pieceGo); //삭제할 피스 리스트에 추가
+                _spawnWaitingPieces.Clear();
             }
         }
         
@@ -284,11 +285,13 @@ public class BoardSystem : MonoBehaviour
                     MatchResult superMatchedPieces = SuperMatch(matchedPieces); //슈퍼 매치 검사
 
                     piecesToRemove.AddRange(superMatchedPieces.connectedPieces); //제거할 피스 리스트에 추가
+                    Debug.Log($"매치 발견 : {superMatchedPieces.direction}");
                     
                     switch (superMatchedPieces)
                     {
                         case { direction: MatchDirection.LongHorizontal }:
                             _spawnWaitingPieces.Add(CreateWaitingPieceInfo(piece, true, false));
+                            Debug.Log($"{piece.xIndex},{piece.yIndex}에 가로 {piece.pieceType}스트라이프 생성 대기 추가");
                             break;
                         case { direction: MatchDirection.LongVertical }:
                             _spawnWaitingPieces.Add(CreateWaitingPieceInfo(piece, false, true));
@@ -827,6 +830,7 @@ public class BoardSystem : MonoBehaviour
         return new SpawnWaitingPieceInfo
         {
             prefab = GetPrefabForType(sourcePiece.pieceType),
+            pieceType = sourcePiece.pieceType,
             xIndex = sourcePiece.xIndex,
             yIndex = sourcePiece.yIndex,
             horizontalStriped = horizontalStriped,
@@ -848,6 +852,7 @@ public class BoardSystem : MonoBehaviour
     private struct SpawnWaitingPieceInfo
     {
         public GameObject prefab;
+        public PieceType pieceType;
         public int xIndex;
         public int yIndex;
         public bool horizontalStriped;
