@@ -314,6 +314,8 @@ public class BoardSystem : MonoBehaviour
                 }
             }
         }
+        StripedPieceMatch();
+        
         return hasMatched;
     }
 
@@ -861,6 +863,46 @@ public class BoardSystem : MonoBehaviour
 
                 _spawnWaitingPieces.RemoveAt(i);
                 break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 스트레이프 피스 한 줄 피스 삭제 처리
+    /// </summary>
+    private void StripedPieceMatch()
+    {
+        List<Piece> extraRemovePieces = new List<Piece>();
+        foreach (Piece piece in piecesToRemove)
+        {
+            if (piece.horizontalStriped || piece.verticalStriped)
+            {
+                extraRemovePieces.Add(piece);
+            }
+        }
+        foreach (Piece stripedPiece in extraRemovePieces)
+        {
+            if (stripedPiece.horizontalStriped)
+            {
+                int y = stripedPiece.yIndex;
+                for (int x = 0; x < width; x++)
+                {
+                    if (_boardPieces[x, y].piece != null && !piecesToRemove.Contains(_boardPieces[x, y].piece.GetComponent<Piece>()))
+                    {
+                        piecesToRemove.Add(_boardPieces[x, y].piece.GetComponent<Piece>());
+                    }
+                }
+            }
+            else if (stripedPiece.verticalStriped)
+            {
+                int x = stripedPiece.xIndex;
+                for (int y = 0; y < height; y++)
+                {
+                    if (_boardPieces[x, y].piece != null && !piecesToRemove.Contains(_boardPieces[x, y].piece.GetComponent<Piece>()))
+                    {
+                        piecesToRemove.Add(_boardPieces[x, y].piece.GetComponent<Piece>());
+                    }
+                }
             }
         }
     }
