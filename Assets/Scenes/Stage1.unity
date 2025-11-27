@@ -226,8 +226,8 @@ MonoBehaviour:
   panelBackground: {fileID: 32292157}
   panelVictory: {fileID: 1379116374}
   panelDefeat: {fileID: 1340752259}
-  goalScore: 30
-  moves: 15
+  goalScore: 150
+  moves: 30
   points: 0
   isGameEnded: 0
   txt_Points: {fileID: 454276586}

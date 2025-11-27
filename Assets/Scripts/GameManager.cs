@@ -48,27 +48,31 @@ public class GameManager : MonoBehaviour
         {
             moves--;
         }
-        if (points >= goalScore)
-        {
-            // win game
-            isGameEnded = true;
-            // display victory panel
-            panelBackground.SetActive(true);
-            panelVictory.SetActive(true);
-            txt_Victory.text = $"Left Moves : {moves}\nPoints : {points}";
-            FindAnyObjectByType<BoardSystem>().gameObject.SetActive(false);
-            return;
-        }
+        
         if (moves == 0)
         {
-            // lose game
-            isGameEnded = true;
-            // display defeat panel
-            panelBackground.SetActive(true);
-            panelDefeat.SetActive(true);
-            txt_Lose.text = $"Points : {points}\nGoal Points : {goalScore}";
-            FindAnyObjectByType<BoardSystem>().gameObject.SetActive(false);
-            return;
+            if (points >= goalScore)
+            {
+                // win game
+                isGameEnded = true;
+                // display victory panel
+                panelBackground.SetActive(true);
+                panelVictory.SetActive(true);
+                txt_Victory.text = $"Points : {points}";
+                FindAnyObjectByType<BoardSystem>().gameObject.SetActive(false);
+                return;
+            }
+            else
+            {
+                // lose game
+                isGameEnded = true;
+                // display defeat panel
+                panelBackground.SetActive(true);
+                panelDefeat.SetActive(true);
+                txt_Lose.text = $"Points : {points}\nGoal Points : {goalScore}";
+                FindAnyObjectByType<BoardSystem>().gameObject.SetActive(false);
+                return;
+            }
         }
     }
     public void BackToMenu()
