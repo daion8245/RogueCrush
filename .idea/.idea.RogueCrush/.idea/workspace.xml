@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="93b2bdf8-8099-42fb-943b-7d0795f13de6" name="변경" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.RogueCrush/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.RogueCrush/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/UI.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/UI.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/BoardSystem.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/BoardSystem.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -159,6 +160,7 @@
       <workItem from="1764139226437" duration="7640000" />
       <workItem from="1764152784190" duration="6668000" />
       <workItem from="1764205269973" duration="2734000" />
+      <workItem from="1764215810010" duration="1346000" />
     </task>
     <task id="LOCAL-00001" summary="대충 설명">
       <option name="closed" value="true" />
