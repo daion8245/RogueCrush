@@ -111,7 +111,7 @@ public class BoardSystem : MonoBehaviour
     
     #endregion
     
-    private static BoardSystem _instance; //싱글톤 인스턴스
+    public static BoardSystem _instance; //싱글톤 인스턴스
 
     private void Awake()
     {
@@ -203,7 +203,7 @@ public class BoardSystem : MonoBehaviour
             }
         }
         
-        if (CheckBoardToMatches(false))
+        if (CheckBoardToMatches())
         {
             InitializeBoard();
         }
@@ -238,8 +238,11 @@ public class BoardSystem : MonoBehaviour
     /// 보드에 매치가 있는지 검사 / False,
     /// 보드에 매치가 발견되면 실제 제거 및 리필처리 / True</param>
     /// <returns></returns>
-    public bool CheckBoardToMatches(bool takeAction)
+    public bool CheckBoardToMatches()
     {
+        // is game end = dont check ok?
+        if (GameManager.Instance.isGameEnded)
+            return false;
         //보드 피스 배열이 null이면 종료
         if (_boardPieces == null)
             return false;
@@ -306,13 +309,6 @@ public class BoardSystem : MonoBehaviour
                 }
             }
         }
-        
-        //매치된 피스가 있고 실제 제거 및 리필 처리를 원하면 코루틴 시작
-        if (hasMatched && takeAction)
-        {
-            StartCoroutine(ProcessMatchedBoard());
-        }
-
         return hasMatched;
     }
 
@@ -320,7 +316,7 @@ public class BoardSystem : MonoBehaviour
     /// 매치된 보드,피스를 처리하는 코루틴
     /// </summary>
     /// <returns></returns>
-    private IEnumerator ProcessMatchedBoard()
+    private IEnumerator ProcessMatchedBoard(bool _subtractMoves)
     {
         //매치된 피스들의 매치 플래그 초기화
         foreach (Piece piece in piecesToRemove)
@@ -330,11 +326,12 @@ public class BoardSystem : MonoBehaviour
 
         //매치된 피스 제거 및 리필 처리
         RemoveAndRefill(piecesToRemove);
+        GameManager.Instance.ProcessTurn(piecesToRemove.Count, _subtractMoves);
         yield return new WaitForSeconds(0.4f);
 
-        if (CheckBoardToMatches(false))
+        if (CheckBoardToMatches())
         {
-            yield return StartCoroutine(ProcessMatchedBoard());
+            yield return StartCoroutine(ProcessMatchedBoard(false));
         }
     }
     
@@ -771,9 +768,9 @@ public class BoardSystem : MonoBehaviour
         yield return new WaitForSeconds(0.2f);//피스 이동 대기
 
         //매치 검사 및 처리
-        if (CheckBoardToMatches(true))
+        if (CheckBoardToMatches())
         {
-            yield return null;
+            StartCoroutine(ProcessMatchedBoard(true));
         }
         //매치가 없으면 피스 원래 위치로 되돌리기
         else

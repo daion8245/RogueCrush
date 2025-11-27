@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -19,6 +20,9 @@ public class GameManager : MonoBehaviour
     public TMP_Text txt_Points;
     public TMP_Text txt_Moves;
     public TMP_Text txt_Goal;
+
+    public TMP_Text txt_Victory;
+    public TMP_Text txt_Lose;
     private void Awake()
     {
         Instance = this;
@@ -51,6 +55,8 @@ public class GameManager : MonoBehaviour
             // display victory panel
             panelBackground.SetActive(true);
             panelVictory.SetActive(true);
+            txt_Victory.text = $"Left Moves : {moves}\nPoints : {points}";
+            FindAnyObjectByType<BoardSystem>().gameObject.SetActive(false);
             return;
         }
         if (moves == 0)
@@ -60,16 +66,17 @@ public class GameManager : MonoBehaviour
             // display defeat panel
             panelBackground.SetActive(true);
             panelDefeat.SetActive(true);
+            txt_Lose.text = $"Points : {points}\nGoal Points : {goalScore}";
+            FindAnyObjectByType<BoardSystem>().gameObject.SetActive(false);
             return;
         }
     }
-    // 
-    public void WinGame()
+    public void BackToMenu()
     {
         SceneManager.LoadScene(0);
     }
-    public void LoseGame()
+    public void Retry()
     {
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene(1);
     }
 }
