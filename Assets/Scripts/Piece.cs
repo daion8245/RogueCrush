@@ -71,6 +71,19 @@ public class Piece : MonoBehaviour
         isMoving = false;
     }
 
+    private void SynchronizingAnimationStarts()
+    {
+        var nodeAnimation = AnimationManager.Instance;
+        float progress = nodeAnimation.AnimationProgress;
+        Animator animator = GetComponent<Animator>();
+        animator.Play(gameObject.name, 0, progress);
+    }
+
+    private void Start()
+    {
+        SynchronizingAnimationStarts();
+    }
+
     private void Update()
     {
         // 가로 스트라이프 이미지 활성화/비활성화 관리
