@@ -76,7 +76,9 @@ public class Piece : MonoBehaviour
         var nodeAnimation = AnimationManager.Instance;
         float progress = nodeAnimation.AnimationProgress;
         Animator animator = GetComponent<Animator>();
-        animator.Play(gameObject.name, 0, progress);
+        string stateName = gameObject.name;
+        animator.Play(stateName.Replace("(Clone)", ""), 0, progress);
+        Debug.Log(gameObject.name);
     }
 
     private void Start()
