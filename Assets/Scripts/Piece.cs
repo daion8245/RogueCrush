@@ -120,4 +120,5 @@ public enum PieceType
     Purple,
     Green,
     White,
+    Rainbow,
 }
