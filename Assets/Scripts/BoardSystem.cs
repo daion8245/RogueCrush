@@ -745,6 +745,10 @@ public class BoardSystem : MonoBehaviour
         if (currentPiece.pieceType == PieceType.Rainbow || targetPiece.pieceType == PieceType.Rainbow)
         {
             SuperPotionAction(currentPiece, targetPiece);
+            
+            StartCoroutine(ProcessMatchedBoard(true));
+            isProcessingMoving = false;
+            yield break;
         }
         
         //매치 검사 및 처리
