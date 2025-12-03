@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
@@ -72,6 +71,9 @@ public class BoardSystem : MonoBehaviour
     [Header("피스 프리팹 설정")]
     [SerializeField, Tooltip("보드에 생성할 피스 프리팹(Prefab)")] private GameObject[]piecePrefabs;
     
+    [Header("특수 피스 프리팹 설정")]
+    [SerializeField, Tooltip("보드에 생성할 특수 피스 프리팹(Prefab)")] private GameObject[] specialPiecePrefab;
+    
     [Header("피스 부모 오브젝트 설정")]
     [SerializeField, Tooltip("부모 오브젝트 설정(보통 스크립트 넣은 보드 게임 오브젝트 넣음)"
          )] private Transform piecesRoot;
@@ -111,14 +113,14 @@ public class BoardSystem : MonoBehaviour
     
     #endregion
     
-    public static BoardSystem _instance; //싱글톤 인스턴스
+    public static BoardSystem Instance; //싱글톤 인스턴스
 
     private void Awake()
     {
         //싱글톤 패턴 구현
-        if (_instance == null)
+        if (Instance == null)
         {
-            _instance = this;
+            Instance = this;
         }
         else
         {
@@ -231,13 +233,10 @@ public class BoardSystem : MonoBehaviour
         //삭제할 피스 리스트 초기화
         _piecesToDestroy.Clear();
     }
-    
+
     /// <summary>
     /// 보드에 매치된 피스들이 있는지 확인하는 함수
     /// </summary>
-    /// <param name="takeAction">
-    /// 보드에 매치가 있는지 검사 / False,
-    /// 보드에 매치가 발견되면 실제 제거 및 리필처리 / True</param>
     /// <returns></returns>
     public bool CheckBoardToMatches()
     {
@@ -292,14 +291,20 @@ public class BoardSystem : MonoBehaviour
                     piecesToRemove.AddRange(superMatchedPieces.connectedPieces); //제거할 피스 리스트에 추가
                     Debug.Log($"매치 발견 : {superMatchedPieces.direction}");
                     
+                    //만약 슈퍼 매치 / 롱 매치면 특수 피스 생성 대기 추가
                     switch (superMatchedPieces)
                     {
+                        //가로 롱 매치
                         case { direction: MatchDirection.LongHorizontal }:
-                            _spawnWaitingPieces.Add(CreateWaitingPieceInfo(piece, true, false));
-                            Debug.Log($"{piece.xIndex},{piece.yIndex}에 가로 {piece.pieceType}스트라이프 생성 대기 추가");
+                            _spawnWaitingPieces.Add(CreateWaitingPieceInfo(piece, horizontalStriped:true));
                             break;
+                        //세로 롱 매치
                         case { direction: MatchDirection.LongVertical }:
-                            _spawnWaitingPieces.Add(CreateWaitingPieceInfo(piece, false, true));
+                            _spawnWaitingPieces.Add(CreateWaitingPieceInfo(piece, verticalStriped:true));
+                            break;
+                        case {direction: MatchDirection.Super}:
+                            _spawnWaitingPieces.Add(CreateWaitingPieceInfo(piece, super:true));
+                            Debug.LogWarning("슈퍼 매치 피스 생성 대기 추가");
                             break;
                     }
                     
@@ -323,7 +328,7 @@ public class BoardSystem : MonoBehaviour
     /// 매치된 보드,피스를 처리하는 코루틴
     /// </summary>
     /// <returns></returns>
-    private IEnumerator ProcessMatchedBoard(bool _subtractMoves)
+    private IEnumerator ProcessMatchedBoard(bool subtractMoves)
     {
         //매치된 피스들의 매치 플래그 초기화
         foreach (Piece piece in piecesToRemove)
@@ -333,7 +338,7 @@ public class BoardSystem : MonoBehaviour
 
         //매치된 피스 제거 및 리필 처리
         RemoveAndRefill(piecesToRemove);
-        GameManager.Instance.ProcessTurn(piecesToRemove.Count, _subtractMoves);
+        GameManager.Instance.ProcessTurn(piecesToRemove.Count, subtractMoves);
         yield return new WaitForSeconds(0.4f);
 
         if (CheckBoardToMatches())
@@ -725,6 +730,7 @@ public class BoardSystem : MonoBehaviour
         targetPiece.MoveToTarget(GetPiecePosition(targetPiece.xIndex, targetPiece.yIndex, targetPiece.transform.position.z));
     }
 
+    // ReSharper disable Unity.PerformanceAnalysis
     /// <summary>
     /// 매치 처리 코루틴
     /// currentPiece 와 targetPiece 를 교환한 후 매치 검사 및 처리
@@ -736,6 +742,11 @@ public class BoardSystem : MonoBehaviour
     {
         yield return new WaitForSeconds(0.2f);//피스 이동 대기
 
+        if (currentPiece.pieceType == PieceType.Rainbow || targetPiece.pieceType == PieceType.Rainbow)
+        {
+            SuperPotionAction(currentPiece, targetPiece);
+        }
+        
         //매치 검사 및 처리
         if (CheckBoardToMatches())
         {
@@ -749,6 +760,43 @@ public class BoardSystem : MonoBehaviour
 
         //피스 이동 처리 완료 상태 설정
         isProcessingMoving = false;
+    }
+
+    /// <summary>
+    /// 슈퍼 포션 액션 처리 함수
+    /// </summary>
+    /// <param name="currentPiece"></param>
+    /// <param name="targetPiece"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    private void SuperPotionAction(Piece currentPiece, Piece targetPiece)
+    {
+        Piece rainbowPiece = currentPiece;
+        Piece otherPiece = targetPiece;
+        
+        if (currentPiece.pieceType != PieceType.Rainbow)
+        {
+            rainbowPiece = targetPiece;
+            otherPiece = currentPiece;
+        }
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                Node node = _boardPieces[x, y];
+                if (node.isUsable && node.piece != null)
+                {
+                    Piece piece = node.piece.GetComponent<Piece>();
+                    if (piece.pieceType == otherPiece.pieceType)
+                    {
+                        piecesToRemove.Add(piece);
+                    }
+                }
+            }
+        }
+        
+        piecesToRemove.Add(rainbowPiece);
+        piecesToRemove.Add(otherPiece);
     }
 
     /// <summary>
@@ -788,12 +836,20 @@ public class BoardSystem : MonoBehaviour
         return new Vector2(x - spacingX, spawnY);
     }
 
-    private SpawnWaitingPieceInfo CreateWaitingPieceInfo(Piece sourcePiece, bool horizontalStriped, bool verticalStriped)
+    private SpawnWaitingPieceInfo CreateWaitingPieceInfo(Piece sourcePiece, bool horizontalStriped = false, bool verticalStriped = false, bool super = false)
     {
+        PieceType type = sourcePiece.pieceType;
+        GameObject prefab = GetPrefabForType(sourcePiece.pieceType);
+        if (super)
+        {
+            type = PieceType.Rainbow;
+            prefab = GetSpecialPrefabForType(PieceType.Rainbow);
+        }
+        
         return new SpawnWaitingPieceInfo
         {
-            prefab = GetPrefabForType(sourcePiece.pieceType),
-            pieceType = sourcePiece.pieceType,
+            prefab = prefab,
+            pieceType = type,
             xIndex = sourcePiece.xIndex,
             yIndex = sourcePiece.yIndex,
             horizontalStriped = horizontalStriped,
@@ -801,6 +857,17 @@ public class BoardSystem : MonoBehaviour
         };
     }
 
+    private GameObject GetSpecialPrefabForType(PieceType pieceType)
+    {
+        int index = (int)pieceType;
+        if (index >= 0 && index < specialPiecePrefab.Length)
+        {
+            return specialPiecePrefab[index];
+        }
+
+        return specialPiecePrefab.Length > 0 ? specialPiecePrefab[0] : null;
+    }
+    
     private GameObject GetPrefabForType(PieceType pieceType)
     {
         int index = (int)pieceType;
@@ -852,6 +919,7 @@ public class BoardSystem : MonoBehaviour
                     if (pieceComp != null)
                     {
                         pieceComp.SetIndices(x, y); //피스의 x,y 인덱스 설정
+                        pieceComp.pieceType = waitingPiece.pieceType;
                         pieceComp.horizontalStriped = waitingPiece.horizontalStriped;
                         pieceComp.verticalStriped = waitingPiece.verticalStriped;
                         pieceComp.MoveToTarget(GetPiecePosition(x, y, pieceGo.transform.position.z));
