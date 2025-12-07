@@ -98,15 +98,13 @@
       <option name="MIXED_MODE_DEBUG" value="0" />
       <method v="2" />
     </configuration>
-    <configuration name="Unity 에디터에 연결" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost" ignored-value-for-modified-check="13772">
+    <configuration name="Unity 에디터에 연결" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost">
       <option name="allowRunningInParallel" value="false" />
       <option name="listenPortForConnections" value="false" />
-      <option name="pid" value="13772" />
+      <option name="pid" />
       <option name="projectPathOnTarget" />
       <option name="runtimes">
-        <list>
-          <MonoRuntime />
-        </list>
+        <list />
       </option>
       <option name="selectedOptions">
         <list />
@@ -162,7 +160,8 @@
       <workItem from="1764215810010" duration="1346000" />
       <workItem from="1764224818252" duration="2061000" />
       <workItem from="1764676199569" duration="5337000" />
-      <workItem from="1764766960659" duration="5804000" />
+      <workItem from="1764766960659" duration="6935000" />
+      <workItem from="1765092443916" duration="734000" />
     </task>
     <task id="LOCAL-00001" summary="대충 설명">
       <option name="closed" value="true" />
