@@ -1,4 +1,5 @@
 using TMPro;
+using UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -59,6 +60,7 @@ public class GameManager : MonoBehaviour
                 panelBackground.SetActive(true);
                 panelVictory.SetActive(true);
                 txt_Victory.text = $"Points : {points}";
+                LeaderboardUI.LeaderboardSubmitScore(points);
                 FindAnyObjectByType<BoardSystem>().gameObject.SetActive(false);
                 return;
             }

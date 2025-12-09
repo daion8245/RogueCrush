@@ -131,7 +131,7 @@ GameObject:
   - component: {fileID: 122163069}
   - component: {fileID: 122163068}
   m_Layer: 5
-  m_Name: Image
+  m_Name: Leaderboard Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -207,7 +207,7 @@ GameObject:
   - component: {fileID: 231365079}
   - component: {fileID: 231365078}
   m_Layer: 5
-  m_Name: Button (Legacy)
+  m_Name: Back Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -830,6 +830,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2030535838}
+  - component: {fileID: 2030535839}
   m_Layer: 0
   m_Name: HudUI
   m_TagString: Untagged
@@ -853,6 +854,19 @@ Transform:
   - {fileID: 651984236}
   m_Father: {fileID: 1544695914}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2030535839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2030535837}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc550978f80d3be4e8d3564bba95e351, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LeaderboardUI
+  backButton: {fileID: 231365078}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
