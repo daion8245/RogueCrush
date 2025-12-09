@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using Unity.Services.Leaderboards;
-using Unity.Services.Leaderboards.Models;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Unity.Services.Core;
 
 namespace UI
 {
@@ -39,6 +39,21 @@ namespace UI
             else
                 //이미 인스턴스가 존재하면 자신을 파괴
                 Destroy(gameObject);
+            
+            UnityServicesReset();
+        }
+
+        private async void UnityServicesReset()
+        {
+            try
+            {
+                await UnityServices.InitializeAsync();
+                Debug.Log("Unity Services initialized successfully!");
+            }
+            catch (ServicesInitializationException exception)
+            {
+                Debug.LogError($"Unity Services failed to initialize: {exception.Message}");
+            }
         }
 
         private void Start()
