@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using Unity.Services.Authentication;
 using Unity.Services.Leaderboards;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -8,26 +8,19 @@ using Unity.Services.Core;
 
 namespace UI
 {
-    public struct PlayerScore
-    {
-        public string playerName;
-        public int playerScore;
-    }
-
     public class LeaderboardUI : MonoBehaviour
     {
-        #region PrivateVariable
-
-        private List<PlayerScore> playerScores = new List<PlayerScore>();
-
-        #endregion
-    
         #region SerializeField
     
         [SerializeField]
         private Button backButton;
+
+        [SerializeField]
+        private Text leaderboardTxt;
     
         #endregion
+
+        private string[] _topPlayer = new string[5];
         
         public static LeaderboardUI Instance;
 
@@ -49,6 +42,10 @@ namespace UI
             {
                 await UnityServices.InitializeAsync();
                 Debug.Log("Unity Services initialized successfully!");
+                if (!AuthenticationService.Instance.IsSignedIn)
+                {
+                    await AuthenticationService.Instance.SignInAnonymouslyAsync();
+                }
             }
             catch (ServicesInitializationException exception)
             {
@@ -59,7 +56,7 @@ namespace UI
         private void Start()
         {
             backButton.onClick.AddListener(()=>SceneManager.LoadScene(0)); //뒤로가기 버튼 구현
-            GetScore(10);
+            GetScore(5);
         }
 
         public static async void LeaderboardSubmitScore(int score)
@@ -79,7 +76,8 @@ namespace UI
         {
             try
             {
-                var topScores = await LeaderboardsService.Instance.GetScoresAsync("test_Leaderboard", new GetScoresOptions
+                var topScores = await LeaderboardsService.Instance.GetScoresAsync
+                ("best_Player_Leaderboard", new GetScoresOptions
                 {
                     Limit = topN
                 });
@@ -88,9 +86,28 @@ namespace UI
                 {
                     for (int i = 0; i < topScores.Results.Count; i++)
                     {
+                        string str = null;
                         var score = topScores.Results[i];
-                        Debug.Log($"순위 {i + 1}: 유저 ID = {score.PlayerId}, 점수 = {score.Score}");
+                        Debug.Log($"순위 {i + 1}: 유저 이름 = {score.PlayerName}, 점수 = {score.Score}");
+                        
+                        switch (i)
+                        {
+                            case 0:
+                                break;
+                            case 1:
+                                break;
+                            case 2:
+                                break;
+                        }
+
+                        str = $"{i + 1} : {score.PlayerName} \t score({score.Score}) \n";
+
+                        _topPlayer[i] = str;
                     }
+                    
+                    SetLeaderboardText();
+                    
+                    Debug.Log("모든 순위가 표시되었습니다.");
                 }
                 else
                 {
@@ -102,5 +119,15 @@ namespace UI
                 Debug.LogError($"리더보드 데이터를 가져오는 중 오류가 발생했습니다: {e.Message}");
             }
         }
+
+        private void SetLeaderboardText()
+        {
+            leaderboardTxt.text = "";
+            foreach (string player in _topPlayer)
+            {
+                leaderboardTxt.text += player;
+            }
+        }
+        
     }
 }

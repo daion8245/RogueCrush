@@ -22,10 +22,13 @@ public class LoginUI : MonoBehaviour
     {
         await UnityServices.InitializeAsync();
 
-        if (!AuthenticationService.Instance.IsSignedIn)
-        {
-            await AuthenticationService.Instance.SignInAnonymouslyAsync();
-        }
+        if (AuthenticationService.Instance.IsSignedIn)
+            AuthenticationService.Instance.SignOut();
+        
+        if(AuthenticationService.Instance.SessionTokenExists)
+            AuthenticationService.Instance.ClearSessionToken();
+        
+        await AuthenticationService.Instance.SignInAnonymouslyAsync();
 
         Debug.Log($"PlayerId = {AuthenticationService.Instance.PlayerId}");
         _isReady = true;
