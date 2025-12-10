@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -151,15 +152,15 @@ public class BoardSystem : MonoBehaviour
             return;
 
         //마우스 위치에서 피스 선택 처리
-        var mousePos = Mouse.current.position.ReadValue();
-        var worldPos = _mainCam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, 0f));
-        var overlapPoint = Physics2D.OverlapPoint(worldPos);
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+        Vector3 worldPos = _mainCam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, 0f));
+        Collider2D overlapPoint = Physics2D.OverlapPoint(worldPos);
 
         //겹친 오브젝트가 없으면 종료
         if (overlapPoint == null)
             return;
 
-        var piece = overlapPoint.gameObject.GetComponent<Piece>(); //겹친 오브젝트의 피스 컴포넌트 참조
+        Piece piece = overlapPoint.gameObject.GetComponent<Piece>(); //겹친 오브젝트의 피스 컴포넌트 참조
         //피스가 없거나 피스가 이동중이면 종료
         if (piece == null || isProcessingMoving)
             return;
@@ -179,8 +180,8 @@ public class BoardSystem : MonoBehaviour
         spacingY = (height - 1) / 2f; //피스 간 세로 간격 설정
 
         //모든 보드 칸 순회 하면서 피스 생성 
-        for (var y = 0; y < height; y++)
-        for (var x = 0; x < width; x++)
+        for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
         {
             Vector2 position = new(x - spacingX, y - spacingY); //피스 생성 위치 계산
 
@@ -191,12 +192,12 @@ public class BoardSystem : MonoBehaviour
             }
 
             //피스 생성
-            var randomIndex = Random.Range(0, piecePrefabs.Length); //피스 프리팹 중 랜덤 선택
-            var parentForPiece =
+            int randomIndex = Random.Range(0, piecePrefabs.Length); //피스 프리팹 중 랜덤 선택
+            Transform parentForPiece =
                 piecesRoot != null ? piecesRoot : transform; //피스의 부모 오브젝트 설정
-            var pieceGo = Instantiate(piecePrefabs[randomIndex],
+            GameObject pieceGo = Instantiate(piecePrefabs[randomIndex],
                 position, Quaternion.identity, parentForPiece); //피스 생성
-            var pieceComp = pieceGo.GetComponent<Piece>(); //생성된 피스의 Piece 컴포넌트 참조
+            Piece pieceComp = pieceGo.GetComponent<Piece>(); //생성된 피스의 Piece 컴포넌트 참조
 
             //피스의 인덱스 설정
             if (pieceComp != null) pieceComp.SetIndices(x, y); //피스의 x,y 인덱스 설정
@@ -219,7 +220,7 @@ public class BoardSystem : MonoBehaviour
             return;
 
         //모든 피스 삭제
-        foreach (var piece in _piecesToDestroy)
+        foreach (GameObject piece in _piecesToDestroy)
             if (piece != null)
                 Destroy(piece);
 
@@ -240,14 +241,14 @@ public class BoardSystem : MonoBehaviour
         if (_boardPieces == null)
             return false;
 
-        var hasMatched = false; //매치된 피스가 있는지 여부
+        bool hasMatched = false; //매치된 피스가 있는지 여부
 
         piecesToRemove.Clear(); //제거할 피스 리스트 초기화
         ResetMatchedFlags(); //모든 피스의 매치 플래그 초기화
 
         //모든 피스 순회하면서 매치 검사
         //매치된 플래그 초기화
-        foreach (var nodePiece in _boardPieces)
+        foreach (Node nodePiece in _boardPieces)
             //노드가 null이 아니고 피스가 존재하면 매치 플래그 초기화
             //이전에 매치된 피스가 있을수도 있으니 초기화
             if (nodePiece != null && nodePiece.piece != null)
@@ -255,27 +256,27 @@ public class BoardSystem : MonoBehaviour
 
         //2중 for문으로 보드 전체 순회
         //보드의 모든 피스를 검사해서 매치된 피스들을 찾는 for문
-        for (var x = 0; x < width; x++)
-        for (var y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
+        for (int y = 0; y < height; y++)
         {
             //노드가 사용 불가이거나 피스가 없으면 다음 칸으로
             if (!_boardPieces[x, y].isUsable || _boardPieces[x, y].piece == null)
                 continue;
 
             //피스 컴포넌트 참조
-            var piece = _boardPieces[x, y].piece.GetComponent<Piece>();
+            Piece piece = _boardPieces[x, y].piece.GetComponent<Piece>();
 
             //이미 매치된 피스면 다음 칸으로
             if (piece.isMatched)
                 continue;
 
-            var matchedPieces = IsConnected(piece); //피스가 매치되었는지 검사
+            MatchResult matchedPieces = IsConnected(piece); //피스가 매치되었는지 검사
 
 
             //매치된 피스가 3개 이상이면 매칭 처리
             if (matchedPieces.connectedPieces.Count >= 3)
             {
-                var superMatchedPieces = SuperMatch(matchedPieces); //슈퍼 매치 검사
+                MatchResult superMatchedPieces = SuperMatch(matchedPieces); //슈퍼 매치 검사
 
                 piecesToRemove.AddRange(superMatchedPieces.connectedPieces); //제거할 피스 리스트에 추가
                 Debug.Log($"매치 발견 : {superMatchedPieces.direction}");
@@ -298,7 +299,7 @@ public class BoardSystem : MonoBehaviour
                 }
 
                 // 매치 플래그 설정
-                foreach (var pie in superMatchedPieces.connectedPieces) pie.isMatched = true;
+                foreach (Piece pie in superMatchedPieces.connectedPieces) pie.isMatched = true;
 
                 //매치된 피스가 있으므로 플래그 설정
                 hasMatched = true;
@@ -317,7 +318,7 @@ public class BoardSystem : MonoBehaviour
     private IEnumerator ProcessMatchedBoard(bool subtractMoves)
     {
         //매치된 피스들의 매치 플래그 초기화
-        foreach (var piece in piecesToRemove) piece.isMatched = false;
+        foreach (Piece piece in piecesToRemove) piece.isMatched = false;
 
         //매치된 피스 제거 및 리필 처리
         RemoveAndRefill(piecesToRemove);
@@ -334,10 +335,10 @@ public class BoardSystem : MonoBehaviour
     private void RemoveAndRefill(List<Piece> removeTargets)
     {
         //제거할 피스들 순회하면서 제거 처리
-        foreach (var piece in removeTargets)
+        foreach (Piece piece in removeTargets)
         {
-            var xIndex = piece.xIndex;
-            var yIndex = piece.yIndex;
+            int xIndex = piece.xIndex;
+            int yIndex = piece.yIndex;
 
             Destroy(piece.gameObject);
 
@@ -345,8 +346,8 @@ public class BoardSystem : MonoBehaviour
         }
 
         //모든 칸 순회하면서 빈 칸 리필 처리
-        for (var x = 0; x < width; x++)
-        for (var y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
+        for (int y = 0; y < height; y++)
         {
             SpawnWaitingPieces(x, y);
             //빈 칸이면 리필 처리
@@ -361,7 +362,7 @@ public class BoardSystem : MonoBehaviour
     /// <param name="y">리필할 위치 Y</param>
     private void RefillPiece(int x, int y)
     {
-        var yOffset = 1;
+        int yOffset = 1;
 
         //위쪽 칸부터 내려오면서 빈 칸 찾기
         while (y + yOffset < height && _boardPieces[x, y + yOffset].piece == null) yOffset++; //오프셋 증가
@@ -369,9 +370,9 @@ public class BoardSystem : MonoBehaviour
         //빈 칸 위에 피스가 있으면 아래로 이동
         if (y + yOffset < height && _boardPieces[x, y + yOffset].piece != null)
         {
-            var pieceAbove = _boardPieces[x, y + yOffset].piece.GetComponent<Piece>(); //위쪽 피스 컴포넌트 참조
+            Piece pieceAbove = _boardPieces[x, y + yOffset].piece.GetComponent<Piece>(); //위쪽 피스 컴포넌트 참조
 
-            var targetPos = GetPiecePosition(x, y, pieceAbove.transform.position.z); //이동할 위치 계산
+            Vector3 targetPos = GetPiecePosition(x, y, pieceAbove.transform.position.z); //이동할 위치 계산
             pieceAbove.MoveToTarget(targetPos); //피스 이동
             pieceAbove.SetIndices(x, y); //피스 인덱스 업데이트
 
@@ -390,24 +391,25 @@ public class BoardSystem : MonoBehaviour
     /// <param name="x"></param>
     private void SpawnPieceAtTop(int x)
     {
-        var index = FindIndexOfLowestNull(x); //해당 열에서 가장 낮은 빈 칸 인덱스 찾기
+        int index = FindIndexOfLowestNull(x); //해당 열에서 가장 낮은 빈 칸 인덱스 찾기
 
         //만약 빈 칸이 없으면 종료
         if (index < 0)
             return;
 
-        var randomIndex = Random.Range(0, piecePrefabs.Length); //랜덤 피스 프리팹 선택
-        var spawnPos = GetSpawnPosition(x, index); //피스 생성 위치 계산
+        int randomIndex = Random.Range(0, piecePrefabs.Length); //랜덤 피스 프리팹 선택
+        Vector2 spawnPos = GetSpawnPosition(x, index); //피스 생성 위치 계산
 
-        var parentForPiece = piecesRoot != null ? piecesRoot : transform; //피스 부모 오브젝트 설정
-        var newPiece = Instantiate(piecePrefabs[randomIndex], spawnPos, Quaternion.identity, parentForPiece); //새 피스 생성
-        var pieceComp = newPiece.GetComponent<Piece>(); //생성된 피스 컴포넌트 참조
+        Transform parentForPiece = piecesRoot != null ? piecesRoot : transform; //피스 부모 오브젝트 설정
+        GameObject newPiece =
+            Instantiate(piecePrefabs[randomIndex], spawnPos, Quaternion.identity, parentForPiece); //새 피스 생성
+        Piece pieceComp = newPiece.GetComponent<Piece>(); //생성된 피스 컴포넌트 참조
         pieceComp.SetIndices(x, index); //피스 인덱스 설정
 
         _boardPieces[x, index] = new Node(true, newPiece); //보드 칸 배열에 새 피스 할당
         _piecesToDestroy.Add(newPiece); //삭제할 피스 리스트에 추가
 
-        var targetPosition = GetPiecePosition(x, index, newPiece.transform.position.z); //이동할 위치 계산
+        Vector3 targetPosition = GetPiecePosition(x, index, newPiece.transform.position.z); //이동할 위치 계산
         pieceComp.MoveToTarget(targetPosition); //피스 이동
     }
 
@@ -418,9 +420,9 @@ public class BoardSystem : MonoBehaviour
     /// <returns></returns>
     private int FindIndexOfLowestNull(int x)
     {
-        var lowestNull = -1; //가장 낮은 빈 칸 인덱스 초기화
+        int lowestNull = -1; //가장 낮은 빈 칸 인덱스 초기화
         //해당 열에서 가장 낮은 빈 칸 인덱스 찾기
-        for (var y = height - 1; y >= 0; y--)
+        for (int y = height - 1; y >= 0; y--)
             if (_boardPieces[x, y].piece == null && _boardPieces[x, y].isUsable)
                 lowestNull = y;
 
@@ -439,7 +441,7 @@ public class BoardSystem : MonoBehaviour
             matchedResults.direction == MatchDirection.LongHorizontal)
         {
             //매치된 피스들 순회하면서 세로 방향으로 추가 매치 검사
-            foreach (var pie in matchedResults.connectedPieces)
+            foreach (Piece pie in matchedResults.connectedPieces)
             {
                 List<Piece> extraConnectedPieces = new(); //추가로 매치된 피스들 리스트
                 CheckDirection(pie, new Vector2Int(0, 1), extraConnectedPieces); //위쪽 방향 검사
@@ -472,7 +474,7 @@ public class BoardSystem : MonoBehaviour
             matchedResults.direction == MatchDirection.LongVertical)
         {
             //매치된 피스들 순회하면서 가로 방향으로 추가 매치 검사
-            foreach (var pie in matchedResults.connectedPieces)
+            foreach (Piece pie in matchedResults.connectedPieces)
             {
                 List<Piece> extraConnectedPieces = new(); //추가로 매치된 피스들 리스트
                 CheckDirection(pie, new Vector2Int(1, 0), extraConnectedPieces); //오른쪽 방향 검사
@@ -514,15 +516,15 @@ public class BoardSystem : MonoBehaviour
             return;
 
         //모든 피스 순회하면서 매치 플래그 초기화
-        for (var x = 0; x < width; x++)
-        for (var y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
+        for (int y = 0; y < height; y++)
         {
-            var node = _boardPieces[x, y]; //현재 노드 참조
+            Node node = _boardPieces[x, y]; //현재 노드 참조
             //노드가 null이거나 사용 불가이거나 피스가 없으면 다음 칸으로
             if (node == null || !node.isUsable || node.piece == null)
                 continue;
 
-            var piece = node.piece.GetComponent<Piece>(); //피스 컴포넌트 참조
+            Piece piece = node.piece.GetComponent<Piece>(); //피스 컴포넌트 참조
             //피스가 null이 아니면 매치 플래그 초기화
             if (piece != null) piece.isMatched = false;
         }
@@ -593,9 +595,9 @@ public class BoardSystem : MonoBehaviour
     /// <param name="connectedPieces">매치된 피스들을 담는 리스트</param>
     private void CheckDirection(Piece originPiece, Vector2Int direction, List<Piece> connectedPieces)
     {
-        var pieceType = originPiece.pieceType; //검사할 피스 타입
-        var x = originPiece.xIndex + direction.x; //검사 시작 X 좌표
-        var y = originPiece.yIndex + direction.y; //검사 시작 Y 좌표
+        PieceType pieceType = originPiece.pieceType; //검사할 피스 타입
+        int x = originPiece.xIndex + direction.x; //검사 시작 X 좌표
+        int y = originPiece.yIndex + direction.y; //검사 시작 Y 좌표
 
         //해당 방향으로 매치된 피스들 검사
         while (x >= 0 && x < width && y >= 0 && y < height)
@@ -604,7 +606,7 @@ public class BoardSystem : MonoBehaviour
             if (!_boardPieces[x, y].isUsable || _boardPieces[x, y].piece == null)
                 break;
 
-            var neighborPiece = _boardPieces[x, y].piece.GetComponent<Piece>(); //이웃 피스 컴포넌트 참조
+            Piece neighborPiece = _boardPieces[x, y].piece.GetComponent<Piece>(); //이웃 피스 컴포넌트 참조
 
             //이웃 피스가 매치되지 않았고 타입이 동일하면 매치된 피스 리스트에 추가
             if (!neighborPiece.isMatched && neighborPiece.pieceType == pieceType)
@@ -677,8 +679,8 @@ public class BoardSystem : MonoBehaviour
             = (_boardPieces[targetPiece.xIndex, targetPiece.yIndex].piece,
                 _boardPieces[currentPiece.xIndex, currentPiece.yIndex].piece);
 
-        var tempXIndex = currentPiece.xIndex; //피스 인덱스 교환
-        var tempYIndex = currentPiece.yIndex; //피스 인덱스 교환
+        int tempXIndex = currentPiece.xIndex; //피스 인덱스 교환
+        int tempYIndex = currentPiece.yIndex; //피스 인덱스 교환
         currentPiece.xIndex = targetPiece.xIndex; //피스 인덱스 교환
         currentPiece.yIndex = targetPiece.yIndex; //피스 인덱스 교환
         targetPiece.xIndex = tempXIndex; //피스 인덱스 교환
@@ -732,8 +734,11 @@ public class BoardSystem : MonoBehaviour
     /// <exception cref="NotImplementedException"></exception>
     private void SuperPotionAction(Piece currentPiece, Piece targetPiece)
     {
-        var rainbowPiece = currentPiece;
-        var otherPiece = targetPiece;
+        Piece rainbowPiece = currentPiece;
+        Piece otherPiece = targetPiece;
+
+        if (!(rainbowPiece.pieceType == PieceType.Rainbow || otherPiece.pieceType == PieceType.Rainbow))
+            return;
 
         if (currentPiece.pieceType != PieceType.Rainbow)
         {
@@ -741,13 +746,22 @@ public class BoardSystem : MonoBehaviour
             otherPiece = currentPiece;
         }
 
-        for (var x = 0; x < width; x++)
-        for (var y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
+        for (int y = 0; y < height; y++)
         {
-            var node = _boardPieces[x, y];
+            Node node = _boardPieces[x, y];
             if (node.isUsable && node.piece != null)
             {
-                var piece = node.piece.GetComponent<Piece>();
+                Piece piece = node.piece.GetComponent<Piece>();
+
+                //만약 매칭된 피스가 레인보우x레인보우라면 모든 피스 삭제
+                if (rainbowPiece.pieceType == otherPiece.pieceType)
+                {
+                    piecesToRemove.Add(piece);
+                    continue;
+                }
+
+                //같은 색깔의 피스 전부 삭제
                 if (piece.pieceType == otherPiece.pieceType) piecesToRemove.Add(piece);
             }
         }
@@ -789,7 +803,7 @@ public class BoardSystem : MonoBehaviour
     private Vector2 GetSpawnPosition(int x, int targetY)
     {
         float spawnOffset = height - targetY;
-        var spawnY = height - 1 - spacingY + spawnOffset;
+        float spawnY = height - 1 - spacingY + spawnOffset;
 
         return new Vector2(x - spacingX, spawnY);
     }
@@ -797,8 +811,8 @@ public class BoardSystem : MonoBehaviour
     private SpawnWaitingPieceInfo CreateWaitingPieceInfo(Piece sourcePiece, bool horizontalStriped = false,
         bool verticalStriped = false, bool super = false)
     {
-        var type = sourcePiece.pieceType;
-        var prefab = GetPrefabForType(sourcePiece.pieceType);
+        PieceType type = sourcePiece.pieceType;
+        GameObject prefab = GetPrefabForType(sourcePiece.pieceType);
         if (super)
         {
             type = PieceType.Rainbow;
@@ -818,7 +832,7 @@ public class BoardSystem : MonoBehaviour
 
     private GameObject GetSpecialPrefabForType(PieceType pieceType)
     {
-        var index = (int)pieceType;
+        int index = (int)pieceType;
         if (index >= 0 && index < specialPiecePrefab.Length) return specialPiecePrefab[index];
 
         return specialPiecePrefab.Length > 0 ? specialPiecePrefab[0] : null;
@@ -826,7 +840,7 @@ public class BoardSystem : MonoBehaviour
 
     private GameObject GetPrefabForType(PieceType pieceType)
     {
-        var index = (int)pieceType;
+        int index = (int)pieceType;
         if (index >= 0 && index < piecePrefabs.Length) return piecePrefabs[index];
 
         return piecePrefabs.Length > 0 ? piecePrefabs[0] : null;
@@ -848,9 +862,9 @@ public class BoardSystem : MonoBehaviour
     private void SpawnWaitingPieces(int x, int y)
     {
         //대기중인 스폰 피스가 있으면 우선 생성
-        for (var i = _spawnWaitingPieces.Count - 1; i >= 0; i--)
+        for (int i = _spawnWaitingPieces.Count - 1; i >= 0; i--)
         {
-            var waitingPiece = _spawnWaitingPieces[i];
+            SpawnWaitingPieceInfo waitingPiece = _spawnWaitingPieces[i];
             if (waitingPiece.xIndex == x && waitingPiece.yIndex == y)
             {
                 if (_boardPieces[x, y].piece != null)
@@ -861,12 +875,12 @@ public class BoardSystem : MonoBehaviour
 
                 if (_boardPieces[x, y].piece == null && _boardPieces[x, y].isUsable && waitingPiece.prefab != null)
                 {
-                    var spawnPos = GetSpawnPosition(x, y); //피스 생성 위치 계산
+                    Vector2 spawnPos = GetSpawnPosition(x, y); //피스 생성 위치 계산
 
-                    var parentForPiece = piecesRoot != null ? piecesRoot : transform; //피스의 부모 오브젝트 설정
-                    var pieceGo = Instantiate(waitingPiece.prefab,
+                    Transform parentForPiece = piecesRoot != null ? piecesRoot : transform; //피스의 부모 오브젝트 설정
+                    GameObject pieceGo = Instantiate(waitingPiece.prefab,
                         spawnPos, Quaternion.identity, parentForPiece); //피스 생성
-                    var pieceComp = pieceGo.GetComponent<Piece>(); //생성된 피스의 Piece 컴포넌트 참조
+                    Piece pieceComp = pieceGo.GetComponent<Piece>(); //생성된 피스의 Piece 컴포넌트 참조
 
                     //피스의 인덱스 설정
                     if (pieceComp != null)
@@ -893,24 +907,24 @@ public class BoardSystem : MonoBehaviour
     /// </summary>
     private void StripedPieceMatch()
     {
-        var extraRemovePieces = new List<Piece>();
-        foreach (var piece in piecesToRemove)
+        List<Piece> extraRemovePieces = new();
+        foreach (Piece piece in piecesToRemove)
             if (piece.horizontalStriped || piece.verticalStriped)
                 extraRemovePieces.Add(piece);
 
-        foreach (var stripedPiece in extraRemovePieces)
+        foreach (Piece stripedPiece in extraRemovePieces)
             if (stripedPiece.horizontalStriped)
             {
-                var y = stripedPiece.yIndex;
-                for (var x = 0; x < width; x++)
+                int y = stripedPiece.yIndex;
+                for (int x = 0; x < width; x++)
                     if (_boardPieces[x, y].piece != null &&
                         !piecesToRemove.Contains(_boardPieces[x, y].piece.GetComponent<Piece>()))
                         piecesToRemove.Add(_boardPieces[x, y].piece.GetComponent<Piece>());
             }
             else if (stripedPiece.verticalStriped)
             {
-                var x = stripedPiece.xIndex;
-                for (var y = 0; y < height; y++)
+                int x = stripedPiece.xIndex;
+                for (int y = 0; y < height; y++)
                     if (_boardPieces[x, y].piece != null &&
                         !piecesToRemove.Contains(_boardPieces[x, y].piece.GetComponent<Piece>()))
                         piecesToRemove.Add(_boardPieces[x, y].piece.GetComponent<Piece>());

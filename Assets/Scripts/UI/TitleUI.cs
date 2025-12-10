@@ -8,6 +8,9 @@ public class TitleUI : MonoBehaviour
 {
     [SerializeField]
     Button btn_Start;
+    [SerializeField]
+    private Button btn_Leaderboard;
+    
     Vector2 baseScale;
     private void Awake()
     {
@@ -18,6 +21,7 @@ public class TitleUI : MonoBehaviour
     void Initialize()
     {
         btn_Start.onClick.AddListener(OnClickBtnStart);
+        btn_Leaderboard.onClick.AddListener(()=>SceneManager.LoadScene(2));
     }
 
     void OnClickBtnStart()
