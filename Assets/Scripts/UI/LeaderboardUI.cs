@@ -20,7 +20,7 @@ namespace UI
     
         #endregion
 
-        private string[] _topPlayer = new string[5];
+        private string[] _topPlayer = new string[8];
         
         public static LeaderboardUI Instance;
 
@@ -55,8 +55,8 @@ namespace UI
 
         private void Start()
         {
-            backButton.onClick.AddListener(()=>SceneManager.LoadScene(0)); //뒤로가기 버튼 구현
-            GetScore(5);
+            backButton.onClick.AddListener(()=>SceneManager.LoadScene(1)); //뒤로가기 버튼 구현
+            GetScore(8);
         }
 
         public static async void LeaderboardSubmitScore(int score)

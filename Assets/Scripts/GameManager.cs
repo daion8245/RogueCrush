@@ -79,10 +79,15 @@ public class GameManager : MonoBehaviour
     }
     public void BackToMenu()
     {
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene(1);
     }
     public void Retry()
     {
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene(2);
+    }
+
+    public void MoveSceneLeaderboard()
+    {
+        SceneManager.LoadScene(3);
     }
 }

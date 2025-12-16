@@ -7,11 +7,19 @@
     <list default="true" id="93b2bdf8-8099-42fb-943b-7d0795f13de6" name="변경" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.RogueCrush/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.RogueCrush/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/Leaderboard.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Leaderboard.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Login.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Login.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/Stage1.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Stage1.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Title.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Title.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/BoardSystem.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/BoardSystem.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GameManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GameManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/UI/EndGameBtn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/UI/EndGameBtn.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/UI/LeaderboardUI.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/UI/LeaderboardUI.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/UI/LoginUI.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/UI/LoginUI.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/UI/TitleUI.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/UI/TitleUI.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Settings/UniversalRP.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Settings/UniversalRP.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/UniversalRenderPipelineGlobalSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/UniversalRenderPipelineGlobalSettings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/GraphicsSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/GraphicsSettings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/ProjectSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/ProjectSettings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/UnityConnectSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/UnityConnectSettings.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,27 +67,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "Unity 에디터에 연결.Unity 에디터에 연결.executor": "Debug",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultAutoModeForALLUsers.v1": "true",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "리더보드-추가",
-    "junie.onboarding.icon.badge.shown": "true",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "CodeCleanupOptionsPage",
-    "to.speed.mode.migration.done": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Unity 에디터에 연결.Unity 에디터에 연결.executor&quot;: &quot;Debug&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultAutoModeForALLUsers.v1&quot;: &quot;true&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;CodeCleanupOptionsPage&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Unity 에디터에 연결.Unity 에디터에 연결">
     <configuration name="유닛 테스트(배치 모드)" type="RunUnityExe" factoryName="Unity Executable">
       <option name="EXE_PATH" value="C:\Program Files\Unity\Hub\Editor\6000.2.10f1\Editor\Unity.exe" />
@@ -172,7 +180,9 @@
       <workItem from="1765194476878" duration="10000" />
       <workItem from="1765194521966" duration="873000" />
       <workItem from="1765264930686" duration="8300000" />
-      <workItem from="1765360945406" duration="5037000" />
+      <workItem from="1765360945406" duration="9368000" />
+      <workItem from="1765439593168" duration="337000" />
+      <workItem from="1765861597238" duration="684000" />
     </task>
     <task id="LOCAL-00001" summary="대충 설명">
       <option name="closed" value="true" />

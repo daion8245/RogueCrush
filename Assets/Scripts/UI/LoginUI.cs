@@ -58,7 +58,7 @@ public class LoginUI : MonoBehaviour
                 
                 SetNicknameOnServer(nickname);
                 
-                SceneManager.LoadScene(0);
+                SceneManager.LoadScene(1);
             }
             catch (Exception e)
             {

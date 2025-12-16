@@ -549,6 +549,16 @@ public class BoardSystem : MonoBehaviour
                 connectedPieces = connectedPieces,
                 direction = MatchDirection.Horizontal
             };
+        //슈퍼매치(가로 5개 검사)
+        if (connectedPieces.Count >= 5)
+        {
+            return new MatchResult()
+            {
+                connectedPieces = connectedPieces,
+                direction = MatchDirection.Super
+            };
+        }
+        
         //가로 매치 롱 검사
         if (connectedPieces.Count > 3)
             //가로 롱 매치 결과 반환
@@ -571,6 +581,17 @@ public class BoardSystem : MonoBehaviour
                 connectedPieces = connectedPieces,
                 direction = MatchDirection.Vertical
             };
+        
+        //슈퍼매치(세로 5개 검사)
+        if (connectedPieces.Count >= 5)
+        {
+            return new MatchResult()
+            {
+                connectedPieces = connectedPieces,
+                direction = MatchDirection.Super
+            };
+        }
+        
         //세로 매치 롱 검사
         if (connectedPieces.Count > 3)
             return new MatchResult

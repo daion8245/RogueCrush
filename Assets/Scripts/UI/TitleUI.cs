@@ -10,24 +10,23 @@ public class TitleUI : MonoBehaviour
     Button btn_Start;
     [SerializeField]
     private Button btn_Leaderboard;
-    
-    Vector2 baseScale;
+    [SerializeField]
+    private Button btn_Exit;
+
     private void Awake()
     {
-        baseScale = btn_Start.transform.localScale;
         Initialize();
     }
 
     void Initialize()
     {
         btn_Start.onClick.AddListener(OnClickBtnStart);
-        btn_Leaderboard.onClick.AddListener(()=>SceneManager.LoadScene(2));
+        btn_Leaderboard.onClick.AddListener(()=>SceneManager.LoadScene(3));
+        btn_Exit.onClick.AddListener(()=>Application.Quit());
     }
 
     void OnClickBtnStart()
     {
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene(2);
     }
-
-    // btn size smfdjsksmsrj aksemffu goTtmsep dpqkdudtj dksgka
 }

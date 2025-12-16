@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class EndGameBtn : MonoBehaviour
@@ -6,7 +7,8 @@ public class EndGameBtn : MonoBehaviour
     public enum BtnType
     {
         Menu,
-        Retry
+        Retry,
+        Leaderboard
     }
     [SerializeField]
     Button btn_EndGame;
@@ -26,6 +28,10 @@ public class EndGameBtn : MonoBehaviour
         else if (btnType == BtnType.Retry)
         {
             GameManager.Instance.Retry();
+        }
+        else if (btnType == BtnType.Leaderboard)
+        {
+            GameManager.Instance.MoveSceneLeaderboard();
         }
     }
 }
